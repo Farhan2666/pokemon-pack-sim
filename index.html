@@ -816,7 +816,9 @@ async function switchMode(mode) {
   document.getElementById('navCollection').classList.remove('active');
   document.getElementById('homeContent').style.display = 'none';
   document.getElementById('pikaLoading').style.display = 'block';
-  document.getElementById('pikaLoading').innerHTML = '';init();
+  document.getElementById('pikaLoading').innerHTML =
+    '<div class="pika-track"><div class="road"></div><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu"></div><div class="pika-text">Loading...</div><div class="pika-sub">Memuat data...</div>';
+  init();
 }
 
 // ======== DIGIMON DATA ========
@@ -990,7 +992,19 @@ async function init() {
       pikaImg.src = 'https://digi-api.com/images/digimon/w/Agumon.png';
       pikaImg.style.imageRendering = 'auto';
     }
-    await loadDigimonSets();
+    try {
+      await loadDigimonSets();
+    } catch (err) {
+      document.getElementById('pikaLoading').innerHTML = `
+        <div class="pika-track">
+          <div class="road"></div>
+          <img src="https://digi-api.com/images/digimon/w/Agumon.png" style="height:50px;image-rendering:auto">
+        </div>
+        <div class="pika-text" style="color:#ef4444"><img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" alt=""> ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
+        <div class="pika-sub" style="color:var(--muted)">Coba klik tombol di bawah</div>
+        <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid var(--pika);border-radius:10px;background:transparent;color:var(--pika);font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit"><img src="https://api.iconify.design/game-icons/cycle.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> Coba Lagi</button>
+      `;
+    }
     return;
   }
 
