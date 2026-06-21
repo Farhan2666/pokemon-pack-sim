@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon TCG Booster Pack Simulator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    .bg-particles {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(255, 203, 5, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 0%, rgba(239, 68, 68, 0.06) 0%, transparent 40%);
+    }
+    .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px; }
+    header {
+      text-align: center; padding: 30px 0 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 30px;
+    }
+    header h1 {
+      font-size: 2rem; font-weight: 800;
+      background: linear-gradient(135deg, #ffcb05, #ff6b35, #ffcb05);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+    header p { color: #94a3b8; font-size: 0.9rem; margin-top: 4px; }
+
+    /* Set / Pack Selector */
+    .sets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .pack-card {
+      background: linear-gradient(145deg, #16213e, #0f3460);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .pack-card:hover {
+      transform: translateY(-4px);
+      border-color: #ffcb05;
+      box-shadow: 0 12px 30px rgba(255, 203, 5, 0.15);
+    }
+    .pack-card .pack-img {
+      width: 100px; height: 140px;
+      margin: 0 auto 12px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #1e293b, #334155);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      transition: transform 0.3s;
+    }
+    .pack-card:hover .pack-img { transform: scale(1.05); }
+    .pack-card .pack-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .pack-card .pack-series { font-size: 0.75rem; color: #94a3b8; }
+    .pack-card .pack-total { font-size: 0.75rem; color: #64748b; margin-top: 8px; }
+
+    /* Opened pack modal / overlay */
+    .pack-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .pack-overlay.active { display: flex; }
+
+    /* Animation phase: pack tearing */
+    .tear-container {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+    .tear-pack {
+      width: 180px; height: 252px;
+      background: linear-gradient(145deg, #f59e0b, #d97706);
+      border-radius: 12px;
+      position: relative;
+      animation: packShake 0.6s ease-in-out infinite alternate;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+      box-shadow: 0 20px 60px rgba(245, 158, 11, 0.4);
+      overflow: hidden;
+    }
+    .tear-pack::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+      animation: tearGlow 0.8s ease-in-out infinite;
+    }
+    @keyframes packShake {
+      0% { transform: rotate(-3deg) scale(1); }
+      50% { transform: rotate(0deg) scale(1.02); }
+      100% { transform: rotate(3deg) scale(1); }
+    }
+    @keyframes tearGlow {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .tear-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fbbf24;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .tear-flash {
+      animation: flashOut 0.4s ease-out forwards;
+    }
+    @keyframes flashOut {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.5; filter: brightness(3); }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    /* Cards reveal */
+    .cards-reveal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+    }
+    .cards-reveal.active { display: flex; }
+
+    .reveal-header {
+      text-align: center; margin-bottom: 20px; width: 100%;
+    }
+    .reveal-header h2 {
+      font-size: 1.3rem;
+      color: #ffcb05;
+    }
+    .reveal-header .set-info { font-size: 0.85rem; color: #94a3b8; }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      width: 100%;
+      perspective: 1000px;
+    }
+    .card-item {
+      aspect-ratio: 2.5/3.5;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      opacity: 0;
+      transform: rotateY(180deg) scale(0.5);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+    }
+    .card-item.revealed {
+      opacity: 1;
+      transform: rotateY(0deg) scale(1);
+    }
+    .card-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .card-item .card-info {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 6px 8px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .card-item:hover .card-info { opacity: 1; }
+    .card-item .rarity {
+      position: absolute; top: 4px; right: 4px;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.6);
+    }
+    .rarity-Common { border: 1px solid #94a3b8; }
+    .rarity-Uncommon { border: 1px solid #22c55e; }
+    .rarity-Rare { border: 1px solid #3b82f6; }
+    .rarity.rarity-Rare_Holo,
+    .rarity-Rare_Holo_V,
+    .rarity-Rare_Ultra,
+    .rarity-Rare_Secret { border: 1px solid #f59e0b; }
+
+    .close-btn {
+      margin-top: 24px;
+      padding: 12px 32px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .close-btn:hover {
+      background: rgba(255,203,5,0.15);
+      border-color: #ffcb05;
+      color: #ffcb05;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center; padding: 80px 20px; color: #94a3b8;
+    }
+    .loading .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #ffcb05;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Card detail modal */
+    .card-detail-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .card-detail-overlay.active { display: flex; }
+    .card-detail {
+      max-width: 400px; width: 100%;
+      text-align: center;
+    }
+    .card-detail img {
+      width: 100%; max-width: 300px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .card-detail h3 { font-size: 1.3rem; margin-bottom: 4px; }
+    .card-detail .sub { color: #94a3b8; font-size: 0.85rem; }
+    .card-detail .price {
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: rgba(255,203,5,0.1);
+      border: 1px solid rgba(255,203,5,0.2);
+      border-radius: 8px;
+      display: inline-block;
+      font-size: 0.9rem;
+      color: #fbbf24;
+    }
+
+    @media (max-width: 600px) {
+      .sets-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+      .tear-pack { width: 140px; height: 196px; font-size: 2rem; }
+      .cards-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+      header h1 { font-size: 1.4rem; }
+      .pack-card .pack-img { width: 80px; height: 112px; }
+    }
+
+    .section-title {
+      font-size: 1.1rem; font-weight: 600; margin-bottom: 16px;
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+<div class="bg-particles"></div>
+<div class="container">
+  <header>
+    <h1>⚡ Booster Pack Simulator</h1>
+    <p>Pilih pack, buka, dan kumpulkan kartu Pokémon-mu!</p>
+  </header>
+
+  <div id="app">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      Memuat data set...
+    </div>
+    <div id="sets-container" style="display:none">
+      <div class="section-title">Pilih Booster Pack</div>
+      <div class="sets-grid" id="sets-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Pack opening overlay -->
+<div class="pack-overlay" id="packOverlay">
+  <div class="tear-container" id="tearContainer">
+    <div class="tear-pack" id="tearPack">🎁</div>
+    <div class="tear-text" id="tearText">Membuka pack...</div>
+  </div>
+  <div class="cards-reveal" id="cardsReveal">
+    <div class="reveal-header">
+      <h2 id="revealSetName">✨ Phantasmal Flames</h2>
+      <div class="set-info" id="revealSetInfo">Klik kartu untuk detail</div>
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
+    <button class="close-btn" onclick="closePack()">Tutup</button>
+  </div>
+</div>
+
+<!-- Card detail modal -->
+<div class="card-detail-overlay" id="detailOverlay" onclick="this.classList.remove('active')">
+  <div class="card-detail">
+    <img id="detailImg" src="" alt="">
+    <h3 id="detailName"></h3>
+    <div class="sub" id="detailSub"></div>
+    <div class="price" id="detailPrice"></div>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.pokemontcg.io/v2';
+let allSets = [];
+let openedCards = [];
+
+async function fetchAPI(endpoint) {
+  const res = await fetch(`${API}${endpoint}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+async function init() {
+  try {
+    const data = await fetchAPI('/sets?orderBy=-releaseDate&pageSize=40');
+    allSets = data.data;
+    renderSets(allSets);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('sets-container').style.display = 'block';
+  } catch (err) {
+    document.getElementById('loading').innerHTML = `
+      <p style="color:#ef4444">Gagal memuat data: ${err.message}</p>
+      <button onclick="init()" style="margin-top:12px;padding:8px 24px;border:1px solid #ef4444;border-radius:8px;background:transparent;color:#ef4444;cursor:pointer">Coba Lagi</button>
+    `;
+  }
+}
+
+function renderSets(sets) {
+  const grid = document.getElementById('sets-grid');
+  grid.innerHTML = sets.map(set => {
+    const logo = set.images?.logo || '';
+    const seriesColors = {
+      'Mega Evolution': 'linear-gradient(135deg, #7c3aed, #2563eb)',
+      'Sun & Moon': 'linear-gradient(135deg, #f59e0b, #ea580c)',
+      'Sword & Shield': 'linear-gradient(135deg, #3b82f6, #06b6d4)',
+      'Scarlet & Violet': 'linear-gradient(135deg, #ef4444, #ec4899)',
+      'Black & White': 'linear-gradient(135deg, #374151, #6b7280)',
+      'XY': 'linear-gradient(135deg, #8b5cf6, #a855f7)',
+      'HeartGold & SoulSilver': 'linear-gradient(135deg, #fbbf24, #b45309)',
+      'Diamond & Pearl': 'linear-gradient(135deg, #6366f1, #818cf8)',
+    };
+    const bg = seriesColors[set.series] || 'linear-gradient(135deg, #1e293b, #475569)';
+    return `
+      <div class="pack-card" onclick="openPack('${set.id}')">
+        <div class="pack-img" style="background:${bg}">
+          ${logo ? `<img src="${logo}" alt="${set.name}" style="width:80%;height:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">` : '📦'}
+        </div>
+        <div class="pack-name">${set.name}</div>
+        <div class="pack-series">${set.series}</div>
+        <div class="pack-total">${set.printedTotal} kartu</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function openPack(setId) {
+  const overlay = document.getElementById('packOverlay');
+  const tearContainer = document.getElementById('tearContainer');
+  const cardsReveal = document.getElementById('cardsReveal');
+  const tearPack = document.getElementById('tearPack');
+  const tearText = document.getElementById('tearText');
+
+  overlay.classList.add('active');
+  tearContainer.style.display = 'flex';
+  cardsReveal.classList.remove('active');
+  tearText.textContent = 'Membuka pack...';
+  tearPack.className = 'tear-pack';
+  tearPack.textContent = '🎁';
+
+  const set = allSets.find(s => s.id === setId);
+  if (!set) return;
+
+  try {
+    const allCards = await fetchAPI(`/cards?q=set.id:${setId}&pageSize=250`);
+    const allCardData = allCards.data || [];
+
+    const shuffled = allCardData.sort(() => Math.random() - 0.5);
+    openedCards = shuffled.slice(0, 10);
+
+    // Animate pack tearing
+    await delay(400);
+    tearPack.classList.add('tear-flash');
+    tearText.textContent = '✨ Kartu-kartu muncul!';
+
+    await delay(700);
+    tearContainer.style.display = 'none';
+    cardsReveal.classList.add('active');
+
+    // Render cards
+    const grid = document.getElementById('cardsGrid');
+    const revealName = document.getElementById('revealSetName');
+    const revealInfo = document.getElementById('revealSetInfo');
+    revealName.textContent = `✨ ${set.name}`;
+    revealInfo.textContent = `${set.series} — ${openedCards.length} kartu`;
+
+    grid.innerHTML = openedCards.map((card, i) => {
+      const rarity = card.rarity?.replace(/\s+/g, '_') || 'Common';
+      const rarityDisplay = card.rarity || 'Common';
+      const isRare = rarity.includes('Rare') || rarity.includes('Ultra') || rarity.includes('Secret');
+      return `
+        <div class="card-item rarity-${rarity}" style="transition-delay:${i * 0.08}s" data-index="${i}" onclick="showDetail(${i})">
+          <img src="${card.images?.small || ''}" alt="${card.name}" loading="lazy">
+          <div class="rarity ${rarity}">${rarityDisplay}</div>
+          <div class="card-info">${card.name} ${isRare ? '⭐' : ''}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Trigger reveal animation staggered
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.card-item').forEach(el => {
+          el.classList.add('revealed');
+        });
+      });
+    });
+
+  } catch (err) {
+    tearText.textContent = '❌ Gagal membuka pack: ' + err.message;
+  }
+}
+
+function showDetail(index) {
+  const card = openedCards[index];
+  if (!card) return;
+  const overlay = document.getElementById('detailOverlay');
+  document.getElementById('detailImg').src = card.images?.large || card.images?.small || '';
+  document.getElementById('detailName').textContent = `${card.name} — ${card.supertype || ''}`;
+  const types = (card.types || []).join(', ');
+  const sub = [card.rarity, card.hp ? `HP ${card.hp}` : '', types].filter(Boolean).join(' | ');
+  document.getElementById('detailSub').textContent = sub || 'No additional info';
+  const priceEl = document.getElementById('detailPrice');
+  const prices = card.tcgplayer?.prices;
+  if (prices) {
+    const priceKeys = Object.keys(prices);
+    if (priceKeys.length) {
+      const firstPrice = prices[priceKeys[0]];
+      priceEl.textContent = `💰 Market: $${firstPrice.market?.toFixed(2) || 'N/A'}`;
+    } else {
+      priceEl.textContent = '';
+    }
+  } else {
+    priceEl.textContent = '';
+  }
+  overlay.classList.add('active');
+}
+
+function closePack() {
+  document.getElementById('packOverlay').classList.remove('active');
+  document.getElementById('tearContainer').style.display = 'flex';
+  document.getElementById('cardsReveal').classList.remove('active');
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+init();
+</script>
+</body>
+</html>
