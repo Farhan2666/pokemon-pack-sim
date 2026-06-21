@@ -8,6 +8,7 @@
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --pika: #ffcb05; --pika-dark: #e6b800; --bg: #0f0f23; --card-bg: #1a1a3e; --text: #f1f5f9; --muted: #64748b; }
@@ -566,7 +567,7 @@
         <span id="titleIcon"><svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="#333"/></svg></span>
         <span id="titleText">BREWEK POKÉMON KUY</span>
       </h1>
-      <div class="sub" id="subText">✨ Buka pack, kumpulin, pamerin ke temen-temen!</div>
+      <div class="sub" id="subText"><i data-lucide="sparkles" style="width:12px;height:12px;vertical-align:middle"></i> Buka pack, kumpulin, pamerin ke temen-temen!</div>
     </header>
 
     <div class="mode-tabs">
@@ -585,7 +586,8 @@
       Buka Pack
     </button>
     <button onclick="showPage('collection')" id="navCollection">
-      📦 Koleksi <span class="nav-badge" id="collBadge">0</span>
+      <i data-lucide="package" style="width:14px;height:14px;vertical-align:middle;margin-right:2px"></i>
+      Koleksi <span class="nav-badge" id="collBadge">0</span>
     </button>
   </nav>
 
@@ -603,7 +605,7 @@
       <div class="stats-bar" id="statsBar">
         <div class="stat-chip"><div class="num" id="statPacks">0</div><div class="lbl">Pack Dibuka</div></div>
         <div class="stat-chip"><div class="num" id="statCards">0</div><div class="lbl">Total Kartu</div></div>
-        <div class="stat-chip"><div class="num" id="statRare">0</div><div class="lbl">Rare ✨</div></div>
+        <div class="stat-chip"><div class="num" id="statRare">0</div><div class="lbl"><i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i> Rare</div></div>
       </div>
       <div class="section-title">Pilih Booster Pack</div>
       <div class="sets-grid" id="setsGrid"></div>
@@ -615,10 +617,13 @@
     <div class="stats-bar" id="collStats">
       <div class="stat-chip"><div class="num" id="collTotal">0</div><div class="lbl">Total Kartu</div></div>
       <div class="stat-chip"><div class="num" id="collUnique">0</div><div class="lbl">Unik</div></div>
-      <div class="stat-chip"><div class="num" id="collRare">0</div><div class="lbl">Rare ✨</div></div>
+      <div class="stat-chip"><div class="num" id="collRare">0</div><div class="lbl"><i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i> Rare</div></div>
     </div>
     <div class="coll-header">
-      <input type="text" id="collSearch" placeholder="Cari kartu..." oninput="renderCollection()">
+      <div style="position:relative;flex:1;min-width:140px">
+        <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none"></i>
+        <input type="text" id="collSearch" placeholder="Cari kartu..." oninput="renderCollection()" style="padding-left:32px">
+      </div>
       <select id="collFilter" onchange="renderCollection()">
         <option value="all">Semua</option>
         <option value="Rare">Rare ✨</option>
@@ -627,11 +632,11 @@
         <option value="Common">Common</option>
         <option value="Uncommon">Uncommon</option>
       </select>
-      <button class="clear-all-btn" onclick="clearAll()">🗑 Hapus Semua</button>
+      <button class="clear-all-btn" onclick="clearAll()"><i data-lucide="trash-2" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Hapus Semua</button>
     </div>
     <div class="cards-grid" id="collGrid"></div>
     <div class="coll-empty" id="collEmpty" style="display:none">
-      <div class="big">📭</div>
+      <i data-lucide="inbox" style="width:48px;height:48px;color:var(--muted);margin-bottom:12px"></i>
       <p>Belum ada kartu nih!</p>
       <div class="sub">Buka pack dulu di halaman Buka Pack</div>
     </div>
@@ -642,7 +647,7 @@
 <div class="pack-overlay" id="packOverlay">
   <div class="tear-container" id="tearContainer">
     <div class="tear-pack" id="tearPack">
-      🎁
+      <i data-lucide="gift" style="width:48px;height:48px"></i>
       <div class="click-hint">Klik untuk robek!</div>
     </div>
     <div class="tear-text" id="tearText">Klik pack untuk membuka</div>
@@ -654,7 +659,7 @@
       <div class="set-info" id="revealSetInfo">Klik kartu buat detail</div>
     </div>
     <div class="cards-grid" id="cardsGrid"></div>
-    <button class="close-btn" onclick="closePack()">Simpan ke Koleksi ✓</button>
+    <button class="close-btn" onclick="closePack()"><i data-lucide="archive" style="width:14px;height:14px;vertical-align:middle;margin-right:4px"></i> Simpan ke Koleksi</button>
   </div>
 </div>
 
@@ -666,13 +671,13 @@
     <div class="sub-info" id="detailSub"></div>
     <div class="price-tag" id="detailPrice"></div>
     <div id="pokeInfo"></div>
-    <button class="translate-btn" id="translateBtn" onclick="translateCard()">🌐 Yoda-speak</button>
+      <button class="translate-btn" id="translateBtn" onclick="translateCard()"><i data-lucide="languages" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Yoda-speak</button>
     <div class="translation-result" id="translationResult"></div>
     <br>
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px">
-      <button class="btn-sm btn-share" id="shareBtn" onclick="shareCard()">📤 Bagikan</button>
-      <button class="btn-sm btn-del" id="deleteBtn" onclick="deleteCard()">🗑️ Hapus</button>
-      <button class="btn-sm" onclick="document.getElementById('detailOverlay').classList.remove('active')">Tutup</button>
+      <button class="btn-sm btn-share" id="shareBtn" onclick="shareCard()"><i data-lucide="share-2" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Bagikan</button>
+      <button class="btn-sm btn-del" id="deleteBtn" onclick="deleteCard()"><i data-lucide="trash-2" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Hapus</button>
+      <button class="btn-sm" onclick="document.getElementById('detailOverlay').classList.remove('active')"><i data-lucide="x" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Tutup</button>
     </div>
   </div>
 </div>
@@ -797,6 +802,7 @@ async function switchMode(mode) {
   document.getElementById('homeContent').style.display = 'none';
   document.getElementById('pikaLoading').style.display = 'block';
   document.getElementById('pikaLoading').innerHTML = '';
+  try { lucide.createIcons(); } catch(e) {}
   init();
 }
 
@@ -890,9 +896,10 @@ function renderDigimonSets() {
       </div>
       <div class="pack-name">${s.name}</div>
       <div class="pack-series">Digimon Card Game</div>
-      <div class="pack-total">${s.printedTotal} kartu</div>
+      <div class="pack-total"><i data-lucide="layers" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i> ${s.printedTotal} kartu</div>
     </div>
   `).join('');
+  try { lucide.createIcons(); } catch(e) {}
 }
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1021,11 +1028,11 @@ function renderSets(sets) {
       </div>
       <div class="pack-name">${s.name}</div>
       <div class="pack-series">${s.series}</div>
-      <div class="pack-total">${s.printedTotal} kartu</div>
+      <div class="pack-total"><i data-lucide="layers" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i> ${s.printedTotal} kartu</div>
     </div>
   `}).join('');
+  try { lucide.createIcons(); } catch(e) {}
 }
-
 // ======== UPDATE STATS ========
 function updateStats() {
   const total = collection.length;
@@ -1102,10 +1109,11 @@ async function openPack(setId) {
           const rare = isRare(c.rarity);
           return `<div class="card-item rar-${r} ${rare?'rare-pulse':''}" style="transition-delay:${i*0.07}s" data-index="${i}" onclick="showDetail(${i})">
             <img src="${c.images?.small||''}" alt="${c.name}" loading="lazy">
-            <div class="rarity-badge">${rn}</div>
-            <div class="card-info">${c.name}${rare?' ⭐':''}</div>
+            <div class="rarity-badge">${rare?'<i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i>':''}${rn}</div>
+            <div class="card-info">${c.name}${rare?' <i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i>':''}</div>
           </div>`;
         }).join('');
+        try { lucide.createIcons(); } catch(e) {}
 
         requestAnimationFrame(() => {
           requestAnimationFrame(() => document.querySelectorAll('.card-item').forEach(el => el.classList.add('revealed')));
@@ -1197,11 +1205,12 @@ async function openDigimonPack(index) {
           const r = (c.rarity || 'Common').replace(/\s+/g, '_');
           const rare = isDigimonRare(c.rarity);
           return `<div class="card-item rar-${r} ${rare?'rare-pulse':''}" style="transition-delay:${i*0.07}s" data-index="${i}" onclick="showDigimonDetail(${i})">
-            <img src="${DIGIMON_IMG}/${c.id}" alt="${c.name}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);font-size:2rem;text-align:center;padding:10px;word-break:break-word>🦊<br>${c.name}</div>'">
-            <div class="rarity-badge">${c.rarity||'Common'}</div>
-            <div class="card-info">${c.name}${rare?' ⭐':''}</div>
+            <img src="${DIGIMON_IMG}/${c.id}" alt="${c.name}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);font-size:2rem;text-align:center;padding:10px;word-break:break-word><i data-lucide=\\"bug-play\\" style=width:32px;height:32px></i><br>${c.name}</div>'">
+            <div class="rarity-badge">${rare?'<i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i>':''}${c.rarity||'Common'}</div>
+            <div class="card-info">${c.name}${rare?' <i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i>':''}</div>
           </div>`;
         }).join('');
+        try { lucide.createIcons(); } catch(e) {}
 
         requestAnimationFrame(() => {
           requestAnimationFrame(() => document.querySelectorAll('.card-item').forEach(el => el.classList.add('revealed')));
@@ -1431,17 +1440,19 @@ function renderCollection() {
 
   grid.innerHTML = filtered.map((c, i) => {
     const r = (c.rarity || 'Common').replace(/\s+/g, '_');
-    const rare = isRare(c.rarity);
+    const isRareFn = gameMode === 'digimon' ? isDigimonRare : isRare;
+    const rare = isRareFn(c.rarity);
     return `<div class="card-item rar-${r}" style="transition-delay:${Math.min(i,20)*0.03}s" onclick="showCollectionDetail(${i})">
       <img src="${c.image||''}" alt="${c.name}" loading="lazy">
-      <div class="rarity-badge">${c.rarity||'Common'}</div>
-      <div class="card-info">${c.name}${rare?' ⭐':''} · ${c.set||''}</div>
+      <div class="rarity-badge">${rare?'<i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i>':''}${c.rarity||'Common'}</div>
+      <div class="card-info">${c.name}${rare?' <i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i>':''} · ${c.set||''}</div>
     </div>`;
   }).join('');
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => document.querySelectorAll('#collGrid .card-item').forEach(el => el.classList.add('revealed')));
   });
+  try { lucide.createIcons(); } catch(e) {}
 }
 
 function getFilteredCollection() {
