@@ -3,333 +3,356 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pokémon TCG Booster Pack Simulator</title>
+  <title>brewek Pokémon kuy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --pika: #ffcb05; --pika-dark: #e6b800; --bg: #0f0f23; --card-bg: #1a1a3e; --text: #f1f5f9; --muted: #64748b; }
     body {
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      background: #1a1a2e;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      color: #fff;
       overflow-x: hidden;
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(255,203,5,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(59,130,246,0.06) 0%, transparent 50%),
+        repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(255,255,255,0.01) 80px, rgba(255,255,255,0.01) 81px);
     }
-    .bg-particles {
-      position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background:
-        radial-gradient(ellipse at 20% 50%, rgba(255, 203, 5, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 0%, rgba(239, 68, 68, 0.06) 0%, transparent 40%);
+
+    /* ---- Pokéball bg ---- */
+    .bg-balls {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
     }
-    .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .bg-balls span {
+      position: absolute; border-radius: 50%;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle at 35% 35%, rgba(239,68,68,0.06), transparent 70%);
+      border: 1px solid rgba(239,68,68,0.04);
+    }
+    .bg-balls span:nth-child(1) { top: 10%; left: 5%; width: 180px; height: 180px; }
+    .bg-balls span:nth-child(2) { top: 60%; right: 8%; width: 140px; height: 140px; }
+    .bg-balls span:nth-child(3) { top: 30%; right: 30%; width: 100px; height: 100px; background: radial-gradient(circle at 35% 35%, rgba(255,203,5,0.06), transparent 70%); border-color: rgba(255,203,5,0.04); }
+    .bg-balls span:nth-child(4) { bottom: 15%; left: 20%; width: 160px; height: 160px; }
+    .bg-balls span:nth-child(5) { top: 5%; right: 15%; width: 80px; height: 80px; }
+
+    .app { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; }
+
+    /* ---- Header ---- */
     header {
-      text-align: center; padding: 30px 0 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 30px;
+      text-align: center; padding: 24px 0 16px;
+      position: relative;
     }
     header h1 {
-      font-size: 2rem; font-weight: 800;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1.1rem;
       background: linear-gradient(135deg, #ffcb05, #ff6b35, #ffcb05);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
-      letter-spacing: -0.5px;
+      letter-spacing: 1px;
+      line-height: 1.6;
     }
-    header p { color: #94a3b8; font-size: 0.9rem; margin-top: 4px; }
+    header .sub {
+      font-size: 0.75rem; color: var(--muted); margin-top: 6px;
+    }
 
+    /* ---- Nav ---- */
+    nav {
+      display: flex; gap: 4px; justify-content: center; margin: 16px 0 20px;
+      background: rgba(255,255,255,0.04); border-radius: 14px; padding: 4px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    nav button {
+      flex: 1; max-width: 160px;
+      padding: 10px 16px; border: none; border-radius: 11px;
+      background: transparent; color: var(--muted); font-weight: 600; font-size: 0.8rem;
+      cursor: pointer; transition: all 0.3s; font-family: inherit;
+    }
+    nav button.active {
+      background: rgba(255,203,5,0.12); color: var(--pika);
+    }
+    nav button:hover:not(.active) { color: var(--text); }
+    .nav-badge {
+      display: inline-block; margin-left: 4px;
+      background: rgba(255,203,5,0.15); color: var(--pika);
+      font-size: 0.65rem; padding: 1px 7px; border-radius: 20px; font-weight: 700;
+    }
+    nav button.active .nav-badge { background: var(--pika); color: #000; }
+
+    /* ---- Pages ---- */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ---- Sets Grid ---- */
     .sets-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 40px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px; margin-bottom: 20px;
     }
     .pack-card {
-      background: linear-gradient(145deg, #16213e, #0f3460);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
+      background: linear-gradient(145deg, #1a1a3e, #16213e);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px; padding: 18px 14px; text-align: center;
+      cursor: pointer; transition: all 0.3s ease;
     }
     .pack-card:hover {
       transform: translateY(-4px);
-      border-color: #ffcb05;
-      box-shadow: 0 12px 30px rgba(255, 203, 5, 0.15);
+      border-color: var(--pika);
+      box-shadow: 0 12px 30px rgba(255,203,5,0.12);
     }
     .pack-card .pack-img {
-      width: 100px; height: 140px;
-      margin: 0 auto 12px;
+      width: 90px; height: 126px; margin: 0 auto 10px;
       border-radius: 8px;
-      background: linear-gradient(135deg, #1e293b, #334155);
       display: flex; align-items: center; justify-content: center;
-      font-size: 2rem;
-      transition: transform 0.3s;
+      font-size: 1.8rem; transition: transform 0.3s;
     }
-    .pack-card:hover .pack-img { transform: scale(1.05); }
-    .pack-card .pack-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
-    .pack-card .pack-series { font-size: 0.75rem; color: #94a3b8; }
-    .pack-card .pack-total { font-size: 0.75rem; color: #64748b; margin-top: 8px; }
+    .pack-card:hover .pack-img { transform: scale(1.06); }
+    .pack-card .pack-name { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; }
+    .pack-card .pack-series { font-size: 0.7rem; color: var(--muted); }
+    .pack-card .pack-total { font-size: 0.7rem; color: var(--muted); margin-top: 6px; }
 
+    /* ---- Stats Bar ---- */
+    .stats-bar {
+      display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 10px 16px;
+      text-align: center; min-width: 80px;
+    }
+    .stat-chip .num { font-size: 1.2rem; font-weight: 800; }
+    .stat-chip .lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+
+    /* ---- Section Title ---- */
+    .section-title {
+      font-size: 0.9rem; font-weight: 700; margin-bottom: 12px;
+      color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    /* ---- Loading ---- */
+    .pika-loading {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .pika-track {
+      position: relative; height: 80px; margin: 0 auto 16px; max-width: 300px;
+      overflow: hidden;
+    }
+    .pika-track .road {
+      position: absolute; bottom: 10px; left: 0; right: 0;
+      height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px;
+    }
+    .pika-track .road::after {
+      content: ''; position: absolute; top: -6px; left: 0; right: 0;
+      height: 14px;
+      background: repeating-linear-gradient(90deg, transparent, transparent 16px, rgba(255,255,255,0.05) 16px, rgba(255,255,255,0.05) 18px);
+    }
+    .pika-track img {
+      position: absolute; bottom: 14px; height: 50px;
+      animation: pikaRun 1.2s ease-in-out infinite alternate;
+    }
+    @keyframes pikaRun {
+      0% { transform: translateX(-20px) scaleX(1); }
+      48% { transform: translateX(calc(100% + 20px)) scaleX(1); }
+      50% { transform: translateX(calc(100% + 20px)) scaleX(-1); }
+      98% { transform: translateX(-20px) scaleX(-1); }
+      100% { transform: translateX(-20px) scaleX(1); }
+    }
+    .pika-text { font-size: 0.85rem; font-weight: 600; color: var(--pika); }
+    .pika-sub { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    /* ---- Pack Opening Overlay ---- */
     .pack-overlay {
       position: fixed; inset: 0; z-index: 100;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(8px);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      background: rgba(5,5,20,0.92);
+      backdrop-filter: blur(12px);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
       padding: 20px;
     }
     .pack-overlay.active { display: flex; }
 
     .tear-container {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 30px;
+      text-align: center; display: flex; flex-direction: column;
+      align-items: center; gap: 20px;
     }
     .tear-pack {
-      width: 180px; height: 252px;
+      width: 170px; height: 238px;
       background: linear-gradient(145deg, #f59e0b, #d97706);
       border-radius: 12px;
       position: relative;
-      animation: packShake 0.6s ease-in-out infinite alternate;
+      animation: packShake 0.5s ease-in-out infinite alternate;
       display: flex; align-items: center; justify-content: center;
-      font-size: 3rem;
-      box-shadow: 0 20px 60px rgba(245, 158, 11, 0.4);
-      overflow: hidden;
+      font-size: 2.8rem;
+      box-shadow: 0 20px 60px rgba(245,158,11,0.3);
+      overflow: hidden; cursor: pointer;
     }
     .tear-pack::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
-      animation: tearGlow 0.8s ease-in-out infinite;
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+      animation: tearGlow 0.7s ease-in-out infinite;
     }
     @keyframes packShake {
-      0% { transform: rotate(-3deg) scale(1); }
-      50% { transform: rotate(0deg) scale(1.02); }
-      100% { transform: rotate(3deg) scale(1); }
+      0% { transform: rotate(-2deg) scale(1); }
+      100% { transform: rotate(2deg) scale(1.02); }
     }
     @keyframes tearGlow {
       0% { transform: translateX(-100%); }
       100% { transform: translateX(100%); }
     }
+    .tear-pack .click-hint {
+      position: absolute; bottom: -36px; left: 50%; transform: translateX(-50%);
+      font-size: 0.7rem; color: var(--pika); white-space: nowrap;
+      animation: bounce 1s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-4px); }
+    }
     .tear-text {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #fbbf24;
+      font-size: 1rem; font-weight: 600; color: var(--pika);
       animation: pulse 1.2s ease-in-out infinite;
+      min-height: 1.5em;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
     .tear-flash {
-      animation: flashOut 0.4s ease-out forwards;
+      animation: flashOut 0.5s ease-out forwards;
     }
     @keyframes flashOut {
       0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.3); opacity: 0.5; filter: brightness(3); }
+      40% { transform: scale(1.2); opacity: 0.6; filter: brightness(3); }
       100% { transform: scale(0); opacity: 0; }
     }
-
-    .cards-reveal {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      max-width: 900px;
+    .tear-container .loading-bar-wrap {
+      width: 200px; height: 3px; background: rgba(255,255,255,0.08);
+      border-radius: 2px; overflow: hidden;
     }
-    .cards-reveal.active { display: flex; }
-
-    .reveal-header {
-      text-align: center; margin-bottom: 20px; width: 100%;
-    }
-    .reveal-header h2 {
-      font-size: 1.3rem;
-      color: #ffcb05;
-    }
-    .reveal-header .set-info { font-size: 0.85rem; color: #94a3b8; }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
-      width: 100%;
-      perspective: 1000px;
-    }
-    .card-item {
-      aspect-ratio: 2.5/3.5;
-      border-radius: 8px;
-      overflow: hidden;
-      position: relative;
-      opacity: 0;
-      transform: rotateY(180deg) scale(0.5);
-      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-      cursor: pointer;
-    }
-    .card-item.revealed {
-      opacity: 1;
-      transform: rotateY(0deg) scale(1);
-    }
-    .card-item.revealed.rare-pulse {
-      animation: rareGlow 1.5s ease-in-out 2;
-    }
-    @keyframes rareGlow {
-      0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
-      50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.8), 0 0 50px rgba(245, 158, 11, 0.3); }
-    }
-    .card-item img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .card-item .card-info {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 6px 8px;
-      background: linear-gradient(transparent, rgba(0,0,0,0.85));
-      color: #fff;
-      font-size: 0.7rem;
-      font-weight: 600;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .card-item:hover .card-info { opacity: 1; }
-    .card-item .rarity {
-      position: absolute; top: 4px; right: 4px;
-      font-size: 0.65rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(0,0,0,0.7);
-    }
-    .rarity-Common { border: 2px solid #64748b; }
-    .rarity-Uncommon { border: 2px solid #22c55e; }
-    .rarity-Rare { border: 2px solid #3b82f6; }
-    .rarity-Rare_Holo, .rarity-Rare_Holo_V,
-    .rarity-Rare_Ultra, .rarity-Rare_Secret,
-    .rarity-Rare_Shiny, .rarity-Rare_Shiny_GX,
-    .rarity-Double_Rare, .rarity-Amazing_Rare,
-    .rarity-Ultra_Rare, .rarity-illustration_rare,
-    .rarity-special_illustration_rare { border: 2px solid #f59e0b; }
-
-    .close-btn {
-      margin-top: 24px;
-      padding: 12px 32px;
-      border: 2px solid rgba(255,255,255,0.2);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.05);
-      color: #fff;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .close-btn:hover {
-      background: rgba(255,203,5,0.15);
-      border-color: #ffcb05;
-      color: #ffcb05;
-    }
-
-    .loading {
-      text-align: center; padding: 80px 20px; color: #94a3b8;
-    }
-    .loading .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: #ffcb05;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading .loading-text { margin-top: 12px; font-size: 0.9rem; }
-    .loading .loading-sub { margin-top: 4px; font-size: 0.8rem; color: #64748b; }
-
-    .pack-overlay .loading-bar-wrap {
-      width: 240px; height: 4px; background: rgba(255,255,255,0.1);
-      border-radius: 2px; overflow: hidden; margin-top: 8px;
-    }
-    .pack-overlay .loading-bar {
+    .tear-container .loading-bar {
       height: 100%; width: 0; border-radius: 2px;
-      background: linear-gradient(90deg, #ffcb05, #ff6b35);
+      background: linear-gradient(90deg, var(--pika), #ff6b35);
       transition: width 0.3s ease;
     }
 
-    /* Card detail modal - extended */
-    .card-detail-overlay {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.92);
-      backdrop-filter: blur(16px);
-      display: none;
-      align-items: center; justify-content: center;
-      padding: 20px;
-      overflow-y: auto;
+    /* Cards reveal in overlay */
+    .cards-reveal {
+      display: none; flex-direction: column; align-items: center;
+      width: 100%; max-width: 900px;
     }
-    .card-detail-overlay.active { display: flex; }
-    .card-detail {
-      max-width: 500px; width: 100%;
-      text-align: center;
-      max-height: 90vh;
-      overflow-y: auto;
+    .cards-reveal.active { display: flex; }
+    .cards-reveal .reveal-header {
+      text-align: center; margin-bottom: 16px; width: 100%;
     }
-    .card-detail .main-card-img {
-      width: 100%; max-width: 280px;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    .cards-reveal .reveal-header h2 { font-size: 1.1rem; color: var(--pika); }
+    .cards-reveal .reveal-header .set-info { font-size: 0.75rem; color: var(--muted); }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px; width: 100%; perspective: 1000px;
     }
-    .card-detail h3 { font-size: 1.3rem; margin-bottom: 2px; }
-    .card-detail .sub { color: #94a3b8; font-size: 0.8rem; margin-bottom: 8px; }
-    .card-detail .price {
-      padding: 6px 14px;
-      background: rgba(255,203,5,0.1);
-      border: 1px solid rgba(255,203,5,0.2);
-      border-radius: 8px;
-      display: inline-block;
-      font-size: 0.85rem;
-      color: #fbbf24;
-      margin-bottom: 12px;
+    .card-item {
+      aspect-ratio: 2.5/3.5;
+      border-radius: 8px; overflow: hidden; position: relative;
+      opacity: 0; transform: rotateY(180deg) scale(0.5);
+      transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+      cursor: pointer;
+    }
+    .card-item.revealed { opacity: 1; transform: rotateY(0deg) scale(1); }
+    .card-item img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .card-item .card-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 5px 6px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+      color: #fff; font-size: 0.65rem; font-weight: 600;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .card-item:hover .card-info { opacity: 1; }
+    .card-item .rarity-badge {
+      position: absolute; top: 4px; right: 4px;
+      font-size: 0.6rem; padding: 2px 5px; border-radius: 4px;
+      background: rgba(0,0,0,0.7);
+    }
+    .card-item.rar-Common { border: 2px solid #64748b; }
+    .card-item.rar-Uncommon { border: 2px solid #22c55e; }
+    .card-item.rar-Rare { border: 2px solid #3b82f6; }
+    .card-item[class*="rar-Rare"], .card-item[class*="rar-Ultra"],
+    .card-item[class*="rar-Secret"], .card-item[class*="rar-Shiny"],
+    .card-item[class*="rar-Double"], .card-item[class*="rar-Amazing"],
+    .card-item[class*="rar-illustration"], .card-item[class*="rar-Holo"] { border: 2px solid #f59e0b; }
+
+    .card-item.rare-pulse {
+      animation: rareGlow 1.5s ease-in-out 2;
+    }
+    @keyframes rareGlow {
+      0%,100% { box-shadow: 0 0 5px rgba(245,158,11,0.2); }
+      50% { box-shadow: 0 0 20px rgba(245,158,11,0.7), 0 0 40px rgba(245,158,11,0.2); }
     }
 
-    /* PokeAPI info section */
-    .poke-section {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 16px;
-      margin-top: 12px;
-      text-align: left;
+    .close-btn {
+      margin-top: 18px; padding: 10px 28px;
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 12px; background: rgba(255,255,255,0.04);
+      color: #fff; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s; font-family: inherit;
     }
-    .poke-section .poke-header {
-      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    .close-btn:hover { border-color: var(--pika); color: var(--pika); background: rgba(255,203,5,0.08); }
+
+    /* ---- Card Detail Modal ---- */
+    .detail-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(5,5,20,0.93); backdrop-filter: blur(16px);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px; overflow-y: auto;
     }
-    .poke-section .poke-header .poke-sprite {
-      width: 48px; height: 48px;
-      image-rendering: pixelated;
+    .detail-overlay.active { display: flex; }
+    .detail-card {
+      max-width: 480px; width: 100%; text-align: center;
+      max-height: 90vh; overflow-y: auto;
     }
-    .poke-section .poke-header .poke-name { font-weight: 700; font-size: 1rem; }
-    .poke-section .poke-header .poke-id { color: #64748b; font-size: 0.8rem; }
-    .poke-types { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .detail-card .main-img {
+      width: 100%; max-width: 260px; border-radius: 12px;
+      margin-bottom: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .detail-card h3 { font-size: 1.15rem; }
+    .detail-card .sub-info { color: var(--muted); font-size: 0.75rem; margin-bottom: 6px; }
+    .detail-card .price-tag {
+      padding: 5px 12px; background: rgba(255,203,5,0.08);
+      border: 1px solid rgba(255,203,5,0.15);
+      border-radius: 8px; display: inline-block; font-size: 0.8rem;
+      color: #fbbf24; margin-bottom: 10px;
+    }
+    .detail-card .poke-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 14px;
+      margin-top: 10px; text-align: left;
+    }
+    .poke-box .poke-head {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+    .poke-box .poke-head img { width: 44px; height: 44px; image-rendering: pixelated; }
+    .poke-box .poke-head .pn { font-weight: 700; font-size: 0.9rem; }
+    .poke-box .poke-head .pid { color: var(--muted); font-size: 0.7rem; }
     .type-badge {
-      padding: 2px 12px; border-radius: 20px;
-      font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+      display: inline-block; padding: 2px 10px; border-radius: 20px;
+      font-size: 0.65rem; font-weight: 600; text-transform: uppercase; margin: 2px;
     }
     .type-Grass { background: #78c850; color: #000; }
     .type-Fire { background: #f08030; color: #fff; }
     .type-Water { background: #6890f0; color: #fff; }
-    .type-Lightning { background: #f8d030; color: #000; }
+    .type-Lightning, .type-Electric { background: #f8d030; color: #000; }
     .type-Psychic { background: #f85888; color: #fff; }
     .type-Fighting { background: #c03028; color: #fff; }
-    .type-Darkness { background: #705848; color: #fff; }
-    .type-Metal { background: #b8b8d0; color: #000; }
+    .type-Darkness, .type-Dark { background: #705848; color: #fff; }
+    .type-Metal, .type-Steel { background: #b8b8d0; color: #000; }
     .type-Fairy { background: #ee99ac; color: #000; }
     .type-Dragon { background: #7038f8; color: #fff; }
-    .type-Colorless { background: #a8a878; color: #000; }
-    .type-Normal { background: #a8a878; color: #000; }
+    .type-Colorless, .type-Normal { background: #a8a878; color: #000; }
     .type-Ground { background: #e0c068; color: #000; }
     .type-Poison { background: #a040a0; color: #fff; }
     .type-Flying { background: #a890f0; color: #000; }
@@ -337,168 +360,209 @@
     .type-Rock { background: #b8a038; color: #000; }
     .type-Ghost { background: #705898; color: #fff; }
     .type-Ice { background: #98d8d8; color: #000; }
-    .type-Steel { background: #b8b8d0; color: #000; }
-    .type-Electric { background: #f8d030; color: #000; }
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin-top: 10px;
+    .poke-box .stat-grid {
+      display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin-top: 8px;
     }
-    .stat-item { text-align: center; }
-    .stat-item .stat-val {
-      font-size: 1rem; font-weight: 700;
-    }
-    .stat-item .stat-label {
-      font-size: 0.65rem; color: #64748b; text-transform: uppercase;
-    }
-    .evo-chain {
-      display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    .poke-box .stat-grid .s-item { text-align: center; }
+    .poke-box .stat-grid .s-val { font-size: 0.9rem; font-weight: 700; }
+    .poke-box .stat-grid .s-lbl { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; }
+
+    .poke-box .evo-row {
+      display: flex; align-items: center; gap: 6px; margin-top: 8px;
       justify-content: center; flex-wrap: wrap;
     }
-    .evo-link {
-      font-size: 1.2rem; color: #64748b;
-    }
-    .evo-item {
+    .poke-box .evo-row .evo-item {
       display: flex; flex-direction: column; align-items: center;
-      cursor: pointer;
+      cursor: default;
     }
-    .evo-item img {
-      width: 36px; height: 36px;
-      image-rendering: pixelated;
-    }
-    .evo-item span { font-size: 0.7rem; color: #94a3b8; }
+    .poke-box .evo-row .evo-item img { width: 32px; height: 32px; image-rendering: pixelated; }
+    .poke-box .evo-row .evo-item span { font-size: 0.65rem; color: var(--muted); }
+    .poke-box .evo-row .evo-arrow { color: var(--muted); font-size: 1rem; }
 
-    .translate-btn {
-      margin-top: 8px;
-      padding: 6px 16px;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      background: rgba(255,255,255,0.05);
-      color: #94a3b8;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .translate-btn:hover {
-      border-color: #a78bfa;
-      color: #a78bfa;
-      background: rgba(167,139,250,0.1);
-    }
-    .translation-result {
-      margin-top: 6px;
-      font-size: 0.85rem;
-      color: #a78bfa;
-      font-style: italic;
-      min-height: 1.2em;
-    }
-
-    /* Joke toast */
-    .joke-toast {
-      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-      z-index: 150;
-      background: rgba(30, 41, 59, 0.95);
-      backdrop-filter: blur(8px);
+    .detail-card .translate-btn {
+      margin-top: 6px; padding: 5px 14px;
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 14px 24px;
-      max-width: 400px;
-      text-align: center;
-      font-size: 0.85rem;
+      border-radius: 8px; background: transparent;
+      color: var(--muted); font-size: 0.75rem; cursor: pointer;
+      transition: all 0.3s; font-family: inherit;
+    }
+    .detail-card .translate-btn:hover { border-color: #a78bfa; color: #a78bfa; }
+    .translation-result { margin-top: 4px; font-size: 0.8rem; color: #a78bfa; font-style: italic; min-height: 1.2em; }
+
+    /* ---- Collection Page ---- */
+    .coll-header {
+      display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .coll-header input {
+      flex: 1; min-width: 140px;
+      padding: 8px 14px; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; background: rgba(255,255,255,0.04);
+      color: #fff; font-size: 0.8rem; font-family: inherit;
+      outline: none; transition: border 0.3s;
+    }
+    .coll-header input:focus { border-color: var(--pika); }
+    .coll-header input::placeholder { color: var(--muted); }
+    .coll-header select {
+      padding: 8px 10px; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; background: rgba(255,255,255,0.04);
+      color: var(--text); font-size: 0.75rem; font-family: inherit;
+      outline: none; cursor: pointer;
+    }
+    .coll-empty {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .coll-empty .big { font-size: 3rem; margin-bottom: 12px; }
+    .coll-empty p { font-size: 0.9rem; margin-bottom: 4px; }
+    .coll-empty .sub { font-size: 0.75rem; }
+
+    /* ---- Joke Toast ---- */
+    .joke-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      z-index: 150;
+      background: rgba(30,41,59,0.95); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 12px 20px;
+      max-width: 380px; text-align: center; font-size: 0.8rem;
       color: #cbd5e1;
-      opacity: 0;
-      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      opacity: 0; transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
       pointer-events: none;
     }
-    .joke-toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    .joke-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .section-title {
-      font-size: 1.1rem; font-weight: 600; margin-bottom: 16px;
-      color: #cbd5e1;
-    }
-
+    /* ---- Responsive ---- */
     @media (max-width: 600px) {
-      .sets-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+      header h1 { font-size: 0.8rem; }
+      .sets-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
       .tear-pack { width: 140px; height: 196px; font-size: 2rem; }
       .cards-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-      header h1 { font-size: 1.4rem; }
-      .pack-card .pack-img { width: 80px; height: 112px; }
-      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .pack-card .pack-img { width: 70px; height: 98px; }
+      .stats-bar { gap: 6px; }
+      .stat-chip { padding: 8px 10px; min-width: 60px; }
+      .stat-chip .num { font-size: 1rem; }
+      .poke-box .stat-grid { grid-template-columns: repeat(3,1fr); }
+      nav button { font-size: 0.7rem; padding: 8px 10px; }
     }
   </style>
 </head>
 <body>
-<div class="bg-particles"></div>
-<div class="container">
+<div class="bg-balls">
+  <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<div class="app">
   <header>
-    <h1>⚡ Booster Pack Simulator</h1>
-    <p>Pilih pack, buka, dan kumpulkan kartu Pokémon-mu!</p>
+    <h1>BREWEK POKÉMON KUY</h1>
+    <div class="sub">✨ Buka pack, kumpulin, pamerin ke temen-temen!</div>
   </header>
-  <div id="app">
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <div class="loading-text" id="loadingText">Memuat data set...</div>
-      <div class="loading-sub" id="loadingSub">Mengambil data dari Pokémon TCG API</div>
+
+  <nav>
+    <button class="active" onclick="showPage('home')" id="navHome">🔥 Buka Pack</button>
+    <button onclick="showPage('collection')" id="navColl">📦 Koleksi <span class="nav-badge" id="collBadge">0</span></button>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div class="page active" id="pageHome">
+    <div class="pika-loading" id="pikaLoading">
+      <div class="pika-track">
+        <div class="road"></div>
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu">
+      </div>
+      <div class="pika-text">Loading data set...</div>
+      <div class="pika-sub">Pikachu lagi lari cari kartu Pokémon</div>
     </div>
-    <div id="sets-container" style="display:none">
+    <div id="homeContent" style="display:none">
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-chip"><div class="num" id="statPacks">0</div><div class="lbl">Pack Dibuka</div></div>
+        <div class="stat-chip"><div class="num" id="statCards">0</div><div class="lbl">Total Kartu</div></div>
+        <div class="stat-chip"><div class="num" id="statRare">0</div><div class="lbl">Rare ✨</div></div>
+      </div>
       <div class="section-title">Pilih Booster Pack</div>
-      <div class="sets-grid" id="sets-grid"></div>
+      <div class="sets-grid" id="setsGrid"></div>
+    </div>
+  </div>
+
+  <!-- COLLECTION PAGE -->
+  <div class="page" id="pageCollection">
+    <div class="stats-bar" id="collStats">
+      <div class="stat-chip"><div class="num" id="collTotal">0</div><div class="lbl">Total Kartu</div></div>
+      <div class="stat-chip"><div class="num" id="collUnique">0</div><div class="lbl">Unik</div></div>
+      <div class="stat-chip"><div class="num" id="collRare">0</div><div class="lbl">Rare ✨</div></div>
+    </div>
+    <div class="coll-header">
+      <input type="text" id="collSearch" placeholder="Cari kartu..." oninput="renderCollection()">
+      <select id="collFilter" onchange="renderCollection()">
+        <option value="all">Semua</option>
+        <option value="Rare">Rare ✨</option>
+        <option value="Ultra">Ultra Rare</option>
+        <option value="Secret">Secret Rare</option>
+        <option value="Common">Common</option>
+        <option value="Uncommon">Uncommon</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="collGrid"></div>
+    <div class="coll-empty" id="collEmpty" style="display:none">
+      <div class="big">📭</div>
+      <p>Belum ada kartu nih!</p>
+      <div class="sub">Buka pack dulu di halaman Buka Pack</div>
     </div>
   </div>
 </div>
 
+<!-- Pack opening overlay -->
 <div class="pack-overlay" id="packOverlay">
   <div class="tear-container" id="tearContainer">
-    <div class="tear-pack" id="tearPack">🎁</div>
-    <div class="tear-text" id="tearText">Membuka pack...</div>
-    <div class="loading-bar-wrap">
-      <div class="loading-bar" id="loadingBar"></div>
+    <div class="tear-pack" id="tearPack">
+      🎁
+      <div class="click-hint">Klik untuk robek!</div>
     </div>
+    <div class="tear-text" id="tearText">Klik pack untuk membuka</div>
+    <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
   </div>
   <div class="cards-reveal" id="cardsReveal">
     <div class="reveal-header">
       <h2 id="revealSetName"></h2>
-      <div class="set-info" id="revealSetInfo">Klik kartu untuk detail</div>
+      <div class="set-info" id="revealSetInfo">Klik kartu buat detail</div>
     </div>
     <div class="cards-grid" id="cardsGrid"></div>
-    <button class="close-btn" onclick="closePack()">Tutup</button>
+    <button class="close-btn" onclick="closePack()">Simpan ke Koleksi ✓</button>
   </div>
 </div>
 
-<div class="card-detail-overlay" id="detailOverlay">
-  <div class="card-detail">
-    <img class="main-card-img" id="detailImg" src="" alt="">
+<!-- Card detail modal -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-card">
+    <img class="main-img" id="detailImg" src="">
     <h3 id="detailName"></h3>
-    <div class="sub" id="detailSub"></div>
-    <div class="price" id="detailPrice"></div>
+    <div class="sub-info" id="detailSub"></div>
+    <div class="price-tag" id="detailPrice"></div>
     <div id="pokeInfo"></div>
-    <button class="translate-btn" id="translateBtn" onclick="translateCard()">🌐 Terjemahkan ke Yoda</button>
+    <button class="translate-btn" id="translateBtn" onclick="translateCard()">🌐 Yoda-speak</button>
     <div class="translation-result" id="translationResult"></div>
     <br>
-    <button class="close-btn" onclick="document.getElementById('detailOverlay').classList.remove('active')" style="margin-top:8px">Tutup</button>
+    <button class="close-btn" onclick="document.getElementById('detailOverlay').classList.remove('active')" style="margin-top:6px">Tutup</button>
   </div>
 </div>
 
 <div class="joke-toast" id="jokeToast"></div>
 
 <script>
-// ---- Config ----
-const API = 'https://api.pokemontcg.io/v2';
+// ======== CONFIG ========
+const TCG_API = 'https://api.pokemontcg.io/v2';
 const POKE_API = 'https://pokeapi.co/api/v2';
 const FUNTRANS_API = 'https://api.funtranslations.com/translate';
 const JOKE_API = 'https://v2.jokeapi.dev/joke/Any?type=single&safe-mode';
-const TIMEOUT = 30000;
+const TIMEOUT = 25000;
+const STORAGE_KEY = 'brewek_koleksi';
 
 let allSets = [];
 let openedCards = [];
+let collection = [];
 let audioCtx = null;
 let currentPokeName = '';
+const pokeIdCache = {};
 
-// ---- Helpers ----
+// ======== HELPERS ========
 function fetchJSON(url, timeout = TIMEOUT) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeout);
@@ -509,362 +573,446 @@ function fetchJSON(url, timeout = TIMEOUT) {
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ---- Audio ----
+function loadCollection() {
+  try { collection = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { collection = []; }
+}
+
+function saveCollection() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(collection));
+}
+
+function isRare(rarity) {
+  if (!rarity) return false;
+  return /Rare|Ultra|Secret|Shiny/i.test(rarity);
+}
+
+// ======== AUDIO ========
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
-function playTearSound() {
+function playSound(type) {
   try {
     initAudio();
-    const b = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.3, audioCtx.sampleRate);
-    const d = b.getChannelData(0);
-    for (let i = 0; i < d.length; i++) {
-      d[i] = (Math.random() * 2 - 1) * Math.max(0, 1 - i / d.length * 4);
-    }
-    const s = audioCtx.createBufferSource();
-    s.buffer = b;
-    const g = audioCtx.createGain();
-    g.gain.setValueAtTime(0.3, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-    s.connect(g).connect(audioCtx.destination);
-    s.start();
-  } catch (_) {}
-}
-
-function playRareSound() {
-  try {
-    initAudio();
-    const notes = [523.25, 659.25, 783.99, 1046.5];
-    notes.forEach((freq, i) => {
-      const b = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.15, audioCtx.sampleRate);
+    if (type === 'tear') {
+      const b = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.25, audioCtx.sampleRate);
       const d = b.getChannelData(0);
-      for (let j = 0; j < d.length; j++) {
-        d[j] = Math.sin(2 * Math.PI * freq * j / audioCtx.sampleRate) * Math.max(0, 1 - j / d.length);
-      }
-      const s = audioCtx.createBufferSource();
-      s.buffer = b;
-      const g = audioCtx.createGain();
-      g.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.08);
-      g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.08 + 0.15);
-      s.connect(g).connect(audioCtx.destination);
-      s.start(audioCtx.currentTime + i * 0.08);
-    });
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.max(0,1-i/d.length*5);
+      const s = audioCtx.createBufferSource(); s.buffer = b;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+0.25);
+      s.connect(g).connect(audioCtx.destination); s.start();
+    } else if (type === 'rare') {
+      [523,659,784,1047].forEach((f,i) => {
+        const b = audioCtx.createBuffer(1, audioCtx.sampleRate*0.12, audioCtx.sampleRate);
+        const d = b.getChannelData(0);
+        for (let j = 0; j < d.length; j++) d[j] = Math.sin(2*Math.PI*f*j/audioCtx.sampleRate)*Math.max(0,1-j/d.length);
+        const s = audioCtx.createBufferSource(); s.buffer = b;
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.18, audioCtx.currentTime+i*0.07);
+        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+i*0.07+0.12);
+        s.connect(g).connect(audioCtx.destination); s.start(audioCtx.currentTime+i*0.07);
+      });
+    } else if (type === 'common') {
+      const b = audioCtx.createBuffer(1, audioCtx.sampleRate*0.15, audioCtx.sampleRate);
+      const d = b.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.sin(2*Math.PI*200*i/audioCtx.sampleRate)*Math.max(0,1-i/d.length*2);
+      const s = audioCtx.createBufferSource(); s.buffer = b;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+0.15);
+      s.connect(g).connect(audioCtx.destination); s.start();
+    }
   } catch (_) {}
 }
 
-// ---- Confetti ----
+// ======== CONFETTI ========
 function fireConfetti() {
   try {
-    confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors: ['#ffcb05', '#ff6b35', '#3b82f6', '#22c55e'] });
-    setTimeout(() => confetti({ particleCount: 40, spread: 50, origin: { y: 0.5 }, colors: ['#ffcb05', '#ef4444'] }), 200);
+    confetti({ particleCount: 70, spread: 60, origin: { y: 0.55 }, colors: ['#ffcb05','#ff6b35','#3b82f6','#22c55e'] });
+    setTimeout(() => confetti({ particleCount: 35, spread: 45, origin: { y: 0.5 }, colors: ['#ffcb05','#ef4444'] }), 180);
   } catch (_) {}
 }
 
-// ---- Joke ----
+// ======== JOKE ========
 async function showJoke() {
   try {
-    const data = await fetchJSON(JOKE_API, 5000);
-    const joke = data.joke || '';
-    const toast = document.getElementById('jokeToast');
-    toast.textContent = '😂 ' + joke;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 5000);
+    const d = await fetchJSON(JOKE_API, 5000);
+    const t = document.getElementById('jokeToast');
+    t.textContent = '😂 ' + (d.joke || '');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 5000);
   } catch (_) {}
 }
 
-// ---- Init ----
+// ======== NAVIGATION ========
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+  document.getElementById('nav' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+  if (name === 'collection') renderCollection();
+}
+
+// ======== INIT ========
 async function init() {
-  const loading = document.getElementById('loading');
-  const loadSub = document.getElementById('loadingSub');
+  const pikaText = document.querySelector('.pika-text');
+  const pikaSub = document.querySelector('.pika-sub');
+  loadCollection();
+  updateStats();
+
   try {
-    loadSub.textContent = 'Menghubungi Pokémon TCG API...';
-    const data = await fetchJSON(API + '/sets?orderBy=-releaseDate&pageSize=40');
+    pikaText.textContent = 'Menghubungi Pokémon TCG API...';
+    pikaSub.textContent = 'Pikachu lagi lari cari data kartu';
+    const data = await fetchJSON(TCG_API + '/sets?orderBy=-releaseDate&pageSize=40');
     allSets = data.data;
     renderSets(allSets);
-    loading.style.display = 'none';
-    document.getElementById('sets-container').style.display = 'block';
+    document.getElementById('pikaLoading').style.display = 'none';
+    document.getElementById('homeContent').style.display = 'block';
   } catch (err) {
-    if (err.name === 'AbortError') {
-      loading.innerHTML = `
-        <p style="color:#ef4444;font-size:1.1rem">⏱️ Koneksi timeout</p>
-        <p style="color:#94a3b8;font-size:0.85rem;margin-top:8px">Server Pokémon TCG API terlalu lambat</p>
-        <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid #ffcb05;border-radius:10px;background:transparent;color:#ffcb05;font-weight:600;cursor:pointer">Coba Lagi</button>
-      `;
-    } else {
-      loading.innerHTML = `
-        <p style="color:#ef4444">❌ Gagal: ${err.message}</p>
-        <button onclick="init()" style="margin-top:12px;padding:8px 24px;border:1px solid #ef4444;border-radius:8px;background:transparent;color:#ef4444;cursor:pointer">Coba Lagi</button>
-      `;
-    }
+    document.getElementById('pikaLoading').innerHTML = `
+      <div class="pika-track">
+        <div class="road"></div>
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" style="height:50px">
+      </div>
+      <div class="pika-text" style="color:#ef4444">⏱️ ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
+      <div class="pika-sub" style="color:var(--muted)">Coba klik tombol di bawah</div>
+      <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid var(--pika);border-radius:10px;background:transparent;color:var(--pika);font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit">Coba Lagi 🔄</button>
+    `;
   }
 }
 
 function renderSets(sets) {
-  const grid = document.getElementById('sets-grid');
-  const seriesColors = {
-    'Mega Evolution': 'linear-gradient(135deg, #7c3aed, #2563eb)',
-    'Sun & Moon': 'linear-gradient(135deg, #f59e0b, #ea580c)',
-    'Sword & Shield': 'linear-gradient(135deg, #3b82f6, #06b6d4)',
-    'Scarlet & Violet': 'linear-gradient(135deg, #ef4444, #ec4899)',
-    'Black & White': 'linear-gradient(135deg, #374151, #6b7280)',
-    'XY': 'linear-gradient(135deg, #8b5cf6, #a855f7)',
-    'HeartGold & SoulSilver': 'linear-gradient(135deg, #fbbf24, #b45309)',
-    'Diamond & Pearl': 'linear-gradient(135deg, #6366f1, #818cf8)',
+  const grid = document.getElementById('setsGrid');
+  const colors = {
+    'Mega Evolution': 'linear-gradient(135deg,#7c3aed,#2563eb)',
+    'Sun & Moon': 'linear-gradient(135deg,#f59e0b,#ea580c)',
+    'Sword & Shield': 'linear-gradient(135deg,#3b82f6,#06b6d4)',
+    'Scarlet & Violet': 'linear-gradient(135deg,#ef4444,#ec4899)',
+    'Black & White': 'linear-gradient(135deg,#374151,#6b7280)',
+    'XY': 'linear-gradient(135deg,#8b5cf6,#a855f7)',
+    'HeartGold & SoulSilver': 'linear-gradient(135deg,#fbbf24,#b45309)',
+    'Diamond & Pearl': 'linear-gradient(135deg,#6366f1,#818cf8)',
   };
-  grid.innerHTML = sets.map(set => {
-    const logo = set.images?.logo || '';
-    const bg = seriesColors[set.series] || 'linear-gradient(135deg, #1e293b, #475569)';
-    return `
-      <div class="pack-card" onclick="openPack('${set.id}')">
-        <div class="pack-img" style="background:${bg}">
-          ${logo ? `<img src="${logo}" alt="${set.name}" style="width:80%;height:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">` : '📦'}
-        </div>
-        <div class="pack-name">${set.name}</div>
-        <div class="pack-series">${set.series}</div>
-        <div class="pack-total">${set.printedTotal} kartu</div>
+  grid.innerHTML = sets.map(s => `
+    <div class="pack-card" onclick="openPack('${s.id}')">
+      <div class="pack-img" style="background:${colors[s.series]||'linear-gradient(135deg,#1e293b,#475569)'}">
+        ${s.images?.logo ? `<img src="${s.images.logo}" alt="${s.name}" style="width:80%;height:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">` : '📦'}
       </div>
-    `;
-  }).join('');
+      <div class="pack-name">${s.name}</div>
+      <div class="pack-series">${s.series}</div>
+      <div class="pack-total">${s.printedTotal} kartu</div>
+    </div>
+  `).join('');
 }
 
-// ---- Pack opening ----
-async function openPack(setId) {
-  const overlay = document.getElementById('packOverlay');
-  const tearContainer = document.getElementById('tearContainer');
-  const cardsReveal = document.getElementById('cardsReveal');
-  const tearPack = document.getElementById('tearPack');
-  const tearText = document.getElementById('tearText');
-  const loadingBar = document.getElementById('loadingBar');
+// ======== UPDATE STATS ========
+function updateStats() {
+  const total = collection.length;
+  const unique = new Set(collection.map(c => c.id)).size;
+  const rares = collection.filter(c => isRare(c.rarity)).length;
+  document.getElementById('statPacks').textContent = Math.ceil(total / 10) || 0;
+  document.getElementById('statCards').textContent = total;
+  document.getElementById('statRare').textContent = rares;
+  document.getElementById('collBadge').textContent = total;
+  document.getElementById('collTotal').textContent = total;
+  document.getElementById('collUnique').textContent = unique;
+  document.getElementById('collRare').textContent = rares;
+}
 
-  overlay.classList.add('active');
-  tearContainer.style.display = 'flex';
-  cardsReveal.classList.remove('active');
-  tearPack.className = 'tear-pack';
-  tearPack.textContent = '🎁';
-  tearText.textContent = 'Mengambil data kartu...';
-  loadingBar.style.width = '0%';
-  loadingBar.style.display = '';
+// ======== PACK OPENING ========
+let isOpening = false;
+
+async function openPack(setId) {
+  if (isOpening) return;
+  isOpening = true;
+
+  const ov = document.getElementById('packOverlay');
+  const tc = document.getElementById('tearContainer');
+  const cr = document.getElementById('cardsReveal');
+  const tp = document.getElementById('tearPack');
+  const tt = document.getElementById('tearText');
+  const lb = document.getElementById('loadingBar');
+
+  ov.classList.add('active');
+  tc.style.display = 'flex'; cr.classList.remove('active');
+  tp.className = 'tear-pack'; tp.innerHTML = '🎁<div class="click-hint">Klik untuk robek!</div>';
+  tt.textContent = 'Klik pack untuk membuka';
+  lb.style.width = '0%'; lb.style.display = '';
 
   const set = allSets.find(s => s.id === setId);
-  if (!set) return;
+  if (!set) { isOpening = false; return; }
 
-  let progress = 0;
-  const prog = setInterval(() => {
-    progress = Math.min(progress + 3, 85);
-    loadingBar.style.width = progress + '%';
-  }, 600);
+  // Step 1: Wait for click
+  await new Promise(resolve => {
+    tp.onclick = async function clickHandler() {
+      tp.onclick = null;
+      tp.innerHTML = '🎁';
+      tt.textContent = 'Mengambil data kartu...';
+      lb.style.width = '0%';
 
-  try {
-    const allCards = await fetchJSON(API + `/cards?q=set.id:${setId}&pageSize=250`);
-    const allCardData = allCards.data || [];
+      let p = 0;
+      const prog = setInterval(() => { p = Math.min(p + 3, 85); lb.style.width = p + '%'; }, 600);
 
-    clearInterval(prog);
-    loadingBar.style.width = '100%';
+      try {
+        const data = await fetchJSON(TCG_API + `/cards?q=set.id:${setId}&pageSize=250`);
+        const cards = (data.data || []).sort(() => Math.random() - 0.5).slice(0, 10);
+        openedCards = cards;
 
-    const shuffled = allCardData.sort(() => Math.random() - 0.5);
-    openedCards = shuffled.slice(0, 10);
+        clearInterval(prog); lb.style.width = '100%';
+        playSound('tear'); await delay(200);
+        tp.classList.add('tear-flash');
+        tt.textContent = '✨ Kartu-kartu muncul!';
+        lb.style.display = 'none';
 
-    playTearSound();
-    await delay(300);
-    tearPack.classList.add('tear-flash');
-    tearText.textContent = '✨ Kartu-kartu muncul!';
-    loadingBar.style.display = 'none';
+        const rareCount = openedCards.filter(c => isRare(c.rarity)).length;
+        if (rareCount > 0) setTimeout(() => { playSound('rare'); fireConfetti(); }, 700);
 
-    const rareCards = openedCards.filter(c => {
-      const r = c.rarity || '';
-      return r.includes('Rare') || r.includes('Ultra') || r.includes('Secret') || r.includes('Shiny');
-    });
+        await delay(500);
+        tc.style.display = 'none'; cr.classList.add('active');
 
-    if (rareCards.length > 0) {
-      setTimeout(() => { playRareSound(); fireConfetti(); }, 800);
-    }
+        document.getElementById('revealSetName').textContent = `✨ ${set.name}`;
+        document.getElementById('revealSetInfo').textContent = `${set.series} — ${openedCards.length} kartu`;
 
-    await delay(600);
-    tearContainer.style.display = 'none';
-    cardsReveal.classList.add('active');
+        const grid = document.getElementById('cardsGrid');
+        grid.innerHTML = openedCards.map((c, i) => {
+          const r = (c.rarity || 'Common').replace(/\s+/g, '_');
+          const rn = c.rarity || 'Common';
+          const rare = isRare(c.rarity);
+          return `<div class="card-item rar-${r} ${rare?'rare-pulse':''}" style="transition-delay:${i*0.07}s" data-index="${i}" onclick="showDetail(${i})">
+            <img src="${c.images?.small||''}" alt="${c.name}" loading="lazy">
+            <div class="rarity-badge">${rn}</div>
+            <div class="card-info">${c.name}${rare?' ⭐':''}</div>
+          </div>`;
+        }).join('');
 
-    const grid = document.getElementById('cardsGrid');
-    document.getElementById('revealSetName').textContent = `✨ ${set.name}`;
-    document.getElementById('revealSetInfo').textContent = `${set.series} — ${openedCards.length} kartu`;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => document.querySelectorAll('.card-item').forEach(el => el.classList.add('revealed')));
+        });
 
-    grid.innerHTML = openedCards.map((card, i) => {
-      const rarity = (card.rarity || 'Common').replace(/\s+/g, '_');
-      const isRare = rarity.includes('Rare') || rarity.includes('Ultra') || rarity.includes('Secret') || rarity.includes('Shiny');
-      return `
-        <div class="card-item rarity-${rarity} ${isRare ? 'rare-pulse' : ''}" style="transition-delay:${i * 0.08}s" data-index="${i}" onclick="showDetail(${i})">
-          <img src="${card.images?.small || ''}" alt="${card.name}" loading="lazy">
-          <div class="rarity">${card.rarity || 'Common'}</div>
-          <div class="card-info">${card.name}${isRare ? ' ⭐' : ''}</div>
-        </div>
-      `;
-    }).join('');
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        document.querySelectorAll('.card-item').forEach(el => el.classList.add('revealed'));
-      });
-    });
-
-    // Show joke for common cards
-    const allCommon = openedCards.every(c => {
-      const r = c.rarity || '';
-      return !r.includes('Rare') && !r.includes('Ultra') && !r.includes('Secret') && !r.includes('Shiny');
-    });
-    if (allCommon) showJoke();
-
-  } catch (err) {
-    clearInterval(prog);
-    tearText.textContent = err.name === 'AbortError' ? '⏱️ Timeout — server terlalu lambat' : '❌ Gagal: ' + err.message;
-    await delay(1500);
-    closePack();
-  }
-}
-
-// ---- PokeAPI Integration ----
-async function showDetail(index) {
-  const card = openedCards[index];
-  if (!card) return;
-  const overlay = document.getElementById('detailOverlay');
-
-  document.getElementById('detailImg').src = card.images?.large || card.images?.small || '';
-  document.getElementById('detailName').textContent = `${card.name} — ${card.supertype || ''}`;
-  const types = (card.types || []).join(', ');
-  document.getElementById('detailSub').textContent = [card.rarity, card.hp ? `HP ${card.hp}` : '', types].filter(Boolean).join(' | ');
-
-  const priceEl = document.getElementById('detailPrice');
-  const prices = card.tcgplayer?.prices;
-  if (prices) {
-    const keys = Object.keys(prices);
-    priceEl.textContent = keys.length ? `💰 Market: $${(prices[keys[0]].market || 0).toFixed(2)}` : '';
-  } else priceEl.textContent = '';
-
-  document.getElementById('translationResult').textContent = '';
-  document.getElementById('pokeInfo').innerHTML = '<div class="loading-text" style="font-size:0.8rem">Memuat data Pokémon...</div>';
-
-  currentPokeName = card.name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\s+/g, '-');
-  if (currentPokeName.startsWith('mega')) currentPokeName = currentPokeName.replace('mega', '');
-  if (currentPokeName.endsWith('ex')) currentPokeName = currentPokeName.slice(0, -2).trim();
-
-  const knownFix = {
-    'vileplume': 'vileplume', 'heracross': 'heracross', 'pikachu': 'pikachu',
-    'charizard': 'charizard', 'blastoise': 'blastoise', 'venusaur': 'venusaur',
-    'mewtwo': 'mewtwo', 'mew': 'mew', 'gyarados': 'gyarados',
-    'eevee': 'eevee', 'snorlax': 'snorlax', 'dragonite': 'dragonite',
-    'gengar': 'gengar', 'arcanine': 'arcanine', 'alakazam': 'alakazam',
-    'machamp': 'machamp', 'golem': 'golem', 'kangaskhan': 'kangaskhan',
-    'scyther': 'scyther', 'pinsir': 'pinsir', 'tauros': 'tauros',
-    'ditto': 'ditto', 'omanyte': 'omanyte', 'omastar': 'omastar',
-    'kabuto': 'kabuto', 'kabutops': 'kabutops', 'aerodactyl': 'aerodactyl',
-    'articuno': 'articuno', 'zapdos': 'zapdos', 'mol tres': 'moltres',
-    'moltres': 'moltres', 'dratini': 'dratini', 'oddish': 'oddish',
-    'gloom': 'gloom', 'lotad': 'lotad', 'lombre': 'lombre',
-    'ludicolo': 'ludicolo', 'ralts': 'ralts', 'kirlia': 'kirlia',
-    'gardevoir': 'gardevoir', 'bagon': 'bagon', 'shelgon': 'shelgon',
-    'salamence': 'salamence', 'beldum': 'beldum', 'metang': 'metang',
-    'metagross': 'metagross', 'gible': 'gible', 'gabite': 'gabite',
-    'garchomp': 'garchomp', 'riolu': 'riolu', 'lucario': 'lucario',
-    'honedge': 'honedge', 'doublade': 'doublade', 'aegislash': 'aegislash',
-    'absol': 'absol', 'sneasel': 'sneasel', 'weavile': 'weavile',
-    'umbreon': 'umbreon', 'espeon': 'espeon', 'leafeon': 'leafeon',
-    'glaceon': 'glaceon', 'sylveon': 'sylveon', 'jolteon': 'jolteon',
-    'flareon': 'flareon', 'vaporeon': 'vaporeon',
-  };
-
-  let pokeName = knownFix[currentPokeName] || currentPokeName;
-
-  try {
-    const pokeData = await fetchJSON(`${POKE_API}/pokemon/${pokeName}`, 8000);
-    const speciesData = await fetchJSON(`${POKE_API}/pokemon-species/${pokeData.id}`, 8000);
-
-    const typesHtml = pokeData.types.map(t =>
-      `<span class="type-badge type-${t.type.name.charAt(0).toUpperCase() + t.type.name.slice(1)}">${t.type.name}</span>`
-    ).join('');
-
-    const stats = {};
-    pokeData.stats.forEach(s => stats[s.stat.name] = s.base_stat);
-
-    const totalStats = pokeData.stats.reduce((a, s) => a + s.base_stat, 0);
-
-    const sprite = pokeData.sprites?.other?.['official-artwork']?.front_default ||
-                   pokeData.sprites?.front_default || '';
-
-    let evoHtml = '';
-    try {
-      const evoUrl = speciesData.evolution_chain?.url;
-      if (evoUrl) {
-        const evoData = await fetchJSON(evoUrl, 5000);
-        const evoList = [];
-        let chain = evoData.chain;
-        while (chain) {
-          evoList.push(chain.species.name);
-          chain = chain.evolves_to?.[0] || null;
+        if (openedCards.every(c => !isRare(c.rarity))) {
+          playSound('common');
+          setTimeout(showJoke, 1200);
         }
-        evoHtml = `<div class="evo-chain">${await Promise.all(evoList.map(async (name, i) => {
-          const id = await getPokemonId(name);
-          const img = id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png` : '';
-          return (i > 0 ? '<span class="evo-link">→</span>' : '') +
-            `<div class="evo-item"><img src="${img}" alt="${name}" onerror="this.style.display='none'"><span>${name.charAt(0).toUpperCase()+name.slice(1)}</span></div>`;
-        })).then(r => r.join(''))}</div>`;
+
+        // Auto-save to collection
+        openedCards.forEach(c => {
+          collection.push({
+            id: c.id, name: c.name, rarity: c.rarity, supertype: c.supertype,
+            types: c.types, hp: c.hp, set: set.name, setId: set.id,
+            image: c.images?.small, imageLarge: c.images?.large,
+            tcgplayer: c.tcgplayer, openedAt: Date.now()
+          });
+        });
+        saveCollection();
+        updateStats();
+
+        resolve();
+      } catch (err) {
+        clearInterval(prog);
+        tt.textContent = err.name === 'AbortError' ? '⏱️ Timeout — coba lagi' : '❌ ' + err.message;
+        await delay(1500); closePack(); resolve();
       }
-    } catch (_) {}
-
-    document.getElementById('pokeInfo').innerHTML = `
-      <div class="poke-section">
-        <div class="poke-header">
-          ${sprite ? `<img class="poke-sprite" src="${sprite}" alt="">` : ''}
-          <div>
-            <div class="poke-name">${speciesData.name.charAt(0).toUpperCase() + speciesData.name.slice(1)}</div>
-            <div class="poke-id">#${String(pokeData.id).padStart(4, '0')}</div>
-          </div>
-        </div>
-        <div class="poke-types">${typesHtml}</div>
-        <div class="stats-grid">
-          <div class="stat-item"><div class="stat-val">${stats.hp||0}</div><div class="stat-label">HP</div></div>
-          <div class="stat-item"><div class="stat-val">${stats.attack||0}</div><div class="stat-label">ATK</div></div>
-          <div class="stat-item"><div class="stat-val">${stats.defense||0}</div><div class="stat-label">DEF</div></div>
-          <div class="stat-item"><div class="stat-val">${stats['special-attack']||0}</div><div class="stat-label">SPATK</div></div>
-          <div class="stat-item"><div class="stat-val">${stats['special-defense']||0}</div><div class="stat-label">SPDEF</div></div>
-        </div>
-        <div style="text-align:center;margin-top:6px;font-size:0.8rem;color:#64748b">Total Base Stats: ${totalStats}</div>
-        ${evoHtml}
-      </div>
-    `;
-  } catch (_) {
-    document.getElementById('pokeInfo').innerHTML = '';
-  }
-
-  overlay.classList.add('active');
-}
-
-const pokeIdCache = {};
-async function getPokemonId(name) {
-  if (pokeIdCache[name]) return pokeIdCache[name];
-  try {
-    const d = await fetchJSON(`${POKE_API}/pokemon/${name}`, 3000);
-    pokeIdCache[name] = d.id;
-    return d.id;
-  } catch { return null; }
-}
-
-// ---- FunTranslations ----
-async function translateCard() {
-  const name = document.getElementById('detailName')?.textContent?.split('—')[0]?.trim();
-  if (!name) return;
-  const resultEl = document.getElementById('translationResult');
-  resultEl.textContent = 'Menerjemahkan...';
-  try {
-    const data = await fetchJSON(`${FUNTRANS_API}/yoda.json`, 6000, { method: 'POST', body: new URLSearchParams({ text: name }), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-    resultEl.textContent = '"' + (data.contents?.translated || name) + '"';
-  } catch {
-    resultEl.textContent = '✨ ' + name.split('').reverse().join('') + ' ✨';
-  }
+    };
+  });
+  isOpening = false;
 }
 
 function closePack() {
   document.getElementById('packOverlay').classList.remove('active');
   document.getElementById('tearContainer').style.display = 'flex';
   document.getElementById('cardsReveal').classList.remove('active');
+}
+
+// ======== CARD DETAIL ========
+async function showDetail(index) {
+  const c = openedCards[index];
+  if (!c) return;
+  const ov = document.getElementById('detailOverlay');
+
+  document.getElementById('detailImg').src = c.images?.large || c.images?.small || '';
+  document.getElementById('detailName').textContent = `${c.name} — ${c.supertype || ''}`;
+  const types = (c.types || []).join(', ');
+  document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types].filter(Boolean).join(' | ');
+  const pr = c.tcgplayer?.prices;
+  const keys = pr ? Object.keys(pr) : [];
+  document.getElementById('detailPrice').textContent = keys.length ? `💰 Market: $${(pr[keys[0]].market||0).toFixed(2)}` : '';
+  document.getElementById('translationResult').textContent = '';
+  document.getElementById('pokeInfo').innerHTML = '<div style="font-size:0.8rem;color:var(--muted)">🔍 Mencari data Pokémon...</div>';
+
+  currentPokeName = c.name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\s+/g, '-');
+  if (currentPokeName.startsWith('mega')) currentPokeName = currentPokeName.replace('mega', '');
+  if (currentPokeName.endsWith('ex')) currentPokeName = currentPokeName.slice(0, -2).trim();
+
+  const fix = {
+    'vileplume':'vileplume','heracross':'heracross','pikachu':'pikachu','charizard':'charizard',
+    'blastoise':'blastoise','venusaur':'venusaur','mewtwo':'mewtwo','mew':'mew',
+    'gyarados':'gyarados','eevee':'eevee','snorlax':'snorlax','dragonite':'dragonite',
+    'gengar':'gengar','arcanine':'arcanine','alakazam':'alakazam','machamp':'machamp',
+    'golem':'golem','kangaskhan':'kangaskhan','scyther':'scyther','pinsir':'pinsir',
+    'tauros':'tauros','ditto':'ditto','omanyte':'omanyte','omastar':'omastar',
+    'kabuto':'kabuto','kabutops':'kabutops','aerodactyl':'aerodactyl','articuno':'articuno',
+    'zapdos':'zapdos','moltres':'moltres','dratini':'dratini','oddish':'oddish',
+    'gloom':'gloom','lotad':'lotad','lombre':'lombre','ludicolo':'ludicolo',
+    'ralts':'ralts','kirlia':'kirlia','gardevoir':'gardevoir','bagon':'bagon',
+    'shelgon':'shelgon','salamence':'salamence','beldum':'beldum','metang':'metang',
+    'metagross':'metagross','gible':'gible','gabite':'gabite','garchomp':'garchomp',
+    'riolu':'riolu','lucario':'lucario','absol':'absol','sneasel':'sneasel',
+    'weavile':'weavile','umbreon':'umbreon','espeon':'espeon','leafeon':'leafeon',
+    'glaceon':'glaceon','sylveon':'sylveon','jolteon':'jolteon','flareon':'flareon',
+    'vaporeon':'vaporeon','honedge':'honedge','doublade':'doublade','aegislash':'aegislash',
+  };
+
+  let pokeName = fix[currentPokeName] || currentPokeName;
+
+  try {
+    const pd = await fetchJSON(`${POKE_API}/pokemon/${pokeName}`, 7000);
+    const sp = await fetchJSON(`${POKE_API}/pokemon-species/${pd.id}`, 7000);
+
+    const typesHtml = pd.types.map(t =>
+      `<span class="type-badge type-${t.type.name.charAt(0).toUpperCase()+t.type.name.slice(1)}">${t.type.name}</span>`
+    ).join('');
+
+    const stats = {};
+    pd.stats.forEach(s => stats[s.stat.name] = s.base_stat);
+    const total = pd.stats.reduce((a, s) => a + s.base_stat, 0);
+    const sprite = pd.sprites?.other?.['official-artwork']?.front_default || pd.sprites?.front_default || '';
+
+    let evoHtml = '';
+    try {
+      const evoUrl = sp.evolution_chain?.url;
+      if (evoUrl) {
+        const evo = await fetchJSON(evoUrl, 5000);
+        const list = [];
+        let chain = evo.chain;
+        while (chain) { list.push(chain.species.name); chain = chain.evolves_to?.[0] || null; }
+        const items = await Promise.all(list.map(async (n, i) => {
+          const id = await getPokeId(n);
+          const img = id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png` : '';
+          return (i > 0 ? '<span class="evo-arrow">→</span>' : '') +
+            `<div class="evo-item"><img src="${img}" onerror="this.style.display='none'"><span>${n.charAt(0).toUpperCase()+n.slice(1)}</span></div>`;
+        }));
+        evoHtml = `<div class="evo-row">${items.join('')}</div>`;
+      }
+    } catch (_) {}
+
+    document.getElementById('pokeInfo').innerHTML = `
+      <div class="poke-box">
+        <div class="poke-head">
+          ${sprite ? `<img src="${sprite}">` : ''}
+          <div><div class="pn">${sp.name.charAt(0).toUpperCase()+sp.name.slice(1)}</div><div class="pid">#${String(pd.id).padStart(4,'0')}</div></div>
+        </div>
+        <div>${typesHtml}</div>
+        <div class="stat-grid">
+          <div class="s-item"><div class="s-val">${stats.hp||0}</div><div class="s-lbl">HP</div></div>
+          <div class="s-item"><div class="s-val">${stats.attack||0}</div><div class="s-lbl">ATK</div></div>
+          <div class="s-item"><div class="s-val">${stats.defense||0}</div><div class="s-lbl">DEF</div></div>
+          <div class="s-item"><div class="s-val">${stats['special-attack']||0}</div><div class="s-lbl">SPATK</div></div>
+          <div class="s-item"><div class="s-val">${stats['special-defense']||0}</div><div class="s-lbl">SPDEF</div></div>
+        </div>
+        <div style="text-align:center;margin-top:5px;font-size:0.7rem;color:var(--muted)">Total Base Stats: ${total}</div>
+        ${evoHtml}
+      </div>`;
+  } catch (_) { document.getElementById('pokeInfo').innerHTML = ''; }
+
+  ov.classList.add('active');
+}
+
+async function getPokeId(name) {
+  if (pokeIdCache[name]) return pokeIdCache[name];
+  try { const d = await fetchJSON(`${POKE_API}/pokemon/${name}`, 3000); pokeIdCache[name] = d.id; return d.id; }
+  catch { return null; }
+}
+
+// ======== FUNTRANSLATIONS ========
+async function translateCard() {
+  const name = document.getElementById('detailName')?.textContent?.split('—')[0]?.trim();
+  if (!name) return;
+  const el = document.getElementById('translationResult');
+  el.textContent = 'Menerjemahkan...';
+  try {
+    const d = await fetchJSON(`${FUNTRANS_API}/yoda.json`, 6000, {
+      method: 'POST', body: new URLSearchParams({ text: name }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    el.textContent = '"' + (d.contents?.translated || name) + '"';
+  } catch { el.textContent = '✨ ' + name.split('').reverse().join('') + ' ✨'; }
+}
+
+// ======== COLLECTION PAGE ========
+function renderCollection() {
+  const grid = document.getElementById('collGrid');
+  const empty = document.getElementById('collEmpty');
+  loadCollection();
+
+  const q = document.getElementById('collSearch').value.toLowerCase();
+  const f = document.getElementById('collFilter').value;
+
+  let filtered = collection;
+  if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+  if (f !== 'all') filtered = filtered.filter(c => {
+    if (f === 'Rare') return isRare(c.rarity);
+    if (f === 'Ultra') return (c.rarity||'').includes('Ultra');
+    if (f === 'Secret') return (c.rarity||'').includes('Secret');
+    return (c.rarity||'') === f;
+  });
+
+  // Show newest first
+  filtered = filtered.reverse();
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map((c, i) => {
+    const r = (c.rarity || 'Common').replace(/\s+/g, '_');
+    const rare = isRare(c.rarity);
+    return `<div class="card-item rar-${r}" style="transition-delay:${Math.min(i,20)*0.03}s" onclick="showCollectionDetail(${i})">
+      <img src="${c.image||''}" alt="${c.name}" loading="lazy">
+      <div class="rarity-badge">${c.rarity||'Common'}</div>
+      <div class="card-info">${c.name}${rare?' ⭐':''} · ${c.set||''}</div>
+    </div>`;
+  }).join('');
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => document.querySelectorAll('#collGrid .card-item').forEach(el => el.classList.add('revealed')));
+  });
+}
+
+function showCollectionDetail(index) {
+  loadCollection();
+  const filtered = getFilteredCollection();
+  const c = filtered[index];
+  if (!c) return;
+  const ov = document.getElementById('detailOverlay');
+
+  document.getElementById('detailImg').src = c.imageLarge || c.image || '';
+  document.getElementById('detailName').textContent = `${c.name} — ${c.supertype || ''}`;
+  const types = (c.types || []).join(', ');
+  document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types, `📦 ${c.set||''}`].filter(Boolean).join(' | ');
+  const pr = c.tcgplayer?.prices;
+  const keys = pr ? Object.keys(pr) : [];
+  document.getElementById('detailPrice').textContent = keys.length ? `💰 Market: $${(pr[keys[0]].market||0).toFixed(2)}` : '';
+  document.getElementById('translationResult').textContent = '';
+  document.getElementById('pokeInfo').innerHTML = '';
+
+  currentPokeName = c.name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\s+/g, '-');
+  ov.classList.add('active');
+}
+
+function getFilteredCollection() {
+  const q = document.getElementById('collSearch').value.toLowerCase();
+  const f = document.getElementById('collFilter').value;
+  let filtered = [...collection];
+  if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+  if (f !== 'all') {
+    if (f === 'Rare') filtered = filtered.filter(c => isRare(c.rarity));
+    else if (f === 'Ultra') filtered = filtered.filter(c => (c.rarity||'').includes('Ultra'));
+    else if (f === 'Secret') filtered = filtered.filter(c => (c.rarity||'').includes('Secret'));
+    else filtered = filtered.filter(c => (c.rarity||'') === f);
+  }
+  return filtered.reverse();
 }
 
 init();
