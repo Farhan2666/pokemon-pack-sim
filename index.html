@@ -8,8 +8,7 @@
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
+    <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --pika: #ffcb05; --pika-dark: #e6b800; --bg: #0f0f23; --card-bg: #1a1a3e; --text: #f1f5f9; --muted: #64748b; }
     body {
@@ -552,8 +551,13 @@
       100% { transform: translateX(-20px) scaleX(1); }
     }
 
-    /* ---- Digimon Nav Button Icons ---- */
+    /* ---- Icon helpers ---- */
     .mode-icon { width: 16px; height: 16px; vertical-align: middle; margin-right: 2px; }
+    .gi { vertical-align: middle; }
+    .ic-inline { width: 14px; height: 14px; vertical-align: middle; }
+    .ic-sm { width: 12px; height: 12px; vertical-align: middle; }
+    .ic-lg { width: 18px; height: 18px; vertical-align: middle; }
+    .ic-xl { width: 40px; height: 40px; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -567,12 +571,12 @@
         <span id="titleIcon"><svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="#333"/></svg></span>
         <span id="titleText">BREWEK POKÉMON KUY</span>
       </h1>
-      <div class="sub" id="subText"><i data-lucide="sparkles" style="width:12px;height:12px;vertical-align:middle"></i> Buka pack, kumpulin, pamerin ke temen-temen!</div>
+      <div class="sub" id="subText"><img src="https://api.iconify.design/game-icons/star-cycle.svg?height=12" class="gi" alt=""> Buka pack, kumpulin, pamerin ke temen-temen!</div>
     </header>
 
     <div class="mode-tabs">
-      <button onclick="switchMode('pokemon')" id="modePkm" class="active-pkm">⚡ Pokémon</button>
-      <button onclick="switchMode('digimon')" id="modeDgm">🦊 Digimon</button>
+      <button onclick="switchMode('pokemon')" id="modePkm" class="active-pkm"><img src="https://api.iconify.design/game-icons/lightning-arc.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Pokémon</button>
+      <button onclick="switchMode('digimon')" id="modeDgm"><img src="https://api.iconify.design/game-icons/dinosaur-rex.svg?height=16" class="gi ic-inline" style="margin-right:2px"> Digimon</button>
     </div>
 
   <nav>
@@ -586,7 +590,7 @@
       Buka Pack
     </button>
     <button onclick="showPage('collection')" id="navCollection">
-      <i data-lucide="package" style="width:14px;height:14px;vertical-align:middle;margin-right:2px"></i>
+      <img src="https://api.iconify.design/game-icons/cargo-crate.svg?height=14" class="gi" style="margin-right:2px" alt="">
       Koleksi <span class="nav-badge" id="collBadge">0</span>
     </button>
   </nav>
@@ -605,7 +609,7 @@
       <div class="stats-bar" id="statsBar">
         <div class="stat-chip"><div class="num" id="statPacks">0</div><div class="lbl">Pack Dibuka</div></div>
         <div class="stat-chip"><div class="num" id="statCards">0</div><div class="lbl">Total Kartu</div></div>
-        <div class="stat-chip"><div class="num" id="statRare">0</div><div class="lbl"><i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i> Rare</div></div>
+        <div class="stat-chip"><div class="num" id="statRare">0</div><div class="lbl"><img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt=""> Rare</div></div>
       </div>
       <div class="section-title">Pilih Booster Pack</div>
       <div class="sets-grid" id="setsGrid"></div>
@@ -617,26 +621,26 @@
     <div class="stats-bar" id="collStats">
       <div class="stat-chip"><div class="num" id="collTotal">0</div><div class="lbl">Total Kartu</div></div>
       <div class="stat-chip"><div class="num" id="collUnique">0</div><div class="lbl">Unik</div></div>
-      <div class="stat-chip"><div class="num" id="collRare">0</div><div class="lbl"><i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i> Rare</div></div>
+      <div class="stat-chip"><div class="num" id="collRare">0</div><div class="lbl"><img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt=""> Rare</div></div>
     </div>
     <div class="coll-header">
       <div style="position:relative;flex:1;min-width:140px">
-        <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none"></i>
+        <img src="https://api.iconify.design/game-icons/magnifying-glass.svg?height=14" class="gi" style="width:14px;height:14px;position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none" alt="">
         <input type="text" id="collSearch" placeholder="Cari kartu..." oninput="renderCollection()" style="padding-left:32px">
       </div>
       <select id="collFilter" onchange="renderCollection()">
         <option value="all">Semua</option>
-        <option value="Rare">Rare ✨</option>
+        <option value="Rare">Rare \u2728</option>
         <option value="Ultra">Ultra Rare</option>
         <option value="Secret">Secret Rare</option>
         <option value="Common">Common</option>
         <option value="Uncommon">Uncommon</option>
       </select>
-      <button class="clear-all-btn" onclick="clearAll()"><i data-lucide="trash-2" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Hapus Semua</button>
+      <button class="clear-all-btn" onclick="clearAll()"><img src="https://api.iconify.design/game-icons/trash-can.svg?height=12" class="gi" style="margin-right:3px" alt=""> Hapus Semua</button>
     </div>
     <div class="cards-grid" id="collGrid"></div>
     <div class="coll-empty" id="collEmpty" style="display:none">
-      <i data-lucide="inbox" style="width:48px;height:48px;color:var(--muted);margin-bottom:12px"></i>
+      <img src="https://api.iconify.design/game-icons/envelope.svg?height=48" class="gi" style="margin-bottom:12px" alt="">
       <p>Belum ada kartu nih!</p>
       <div class="sub">Buka pack dulu di halaman Buka Pack</div>
     </div>
@@ -647,7 +651,7 @@
 <div class="pack-overlay" id="packOverlay">
   <div class="tear-container" id="tearContainer">
     <div class="tear-pack" id="tearPack">
-      <i data-lucide="gift" style="width:48px;height:48px"></i>
+      <img src="https://api.iconify.design/game-icons/present.svg?height=48" class="gi" alt="">
       <div class="click-hint">Klik untuk robek!</div>
     </div>
     <div class="tear-text" id="tearText">Klik pack untuk membuka</div>
@@ -659,7 +663,7 @@
       <div class="set-info" id="revealSetInfo">Klik kartu buat detail</div>
     </div>
     <div class="cards-grid" id="cardsGrid"></div>
-    <button class="close-btn" onclick="closePack()"><i data-lucide="archive" style="width:14px;height:14px;vertical-align:middle;margin-right:4px"></i> Simpan ke Koleksi</button>
+    <button class="close-btn" onclick="closePack()"><img src="https://api.iconify.design/game-icons/archive-register.svg?height=14" class="gi" style="margin-right:4px" alt=""> Simpan ke Koleksi</button>
   </div>
 </div>
 
@@ -671,13 +675,13 @@
     <div class="sub-info" id="detailSub"></div>
     <div class="price-tag" id="detailPrice"></div>
     <div id="pokeInfo"></div>
-      <button class="translate-btn" id="translateBtn" onclick="translateCard()"><i data-lucide="languages" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Yoda-speak</button>
+      <button class="translate-btn" id="translateBtn" onclick="translateCard()"><img src="https://api.iconify.design/game-icons/chat-bubble.svg?height=12" class="gi" style="margin-right:3px" alt=""> Yoda-speak</button>
     <div class="translation-result" id="translationResult"></div>
     <br>
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px">
-      <button class="btn-sm btn-share" id="shareBtn" onclick="shareCard()"><i data-lucide="share-2" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Bagikan</button>
-      <button class="btn-sm btn-del" id="deleteBtn" onclick="deleteCard()"><i data-lucide="trash-2" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Hapus</button>
-      <button class="btn-sm" onclick="document.getElementById('detailOverlay').classList.remove('active')"><i data-lucide="x" style="width:12px;height:12px;vertical-align:middle;margin-right:3px"></i> Tutup</button>
+      <button class="btn-sm btn-share" id="shareBtn" onclick="shareCard()"><img src="https://api.iconify.design/game-icons/share.svg?height=12" class="gi" style="margin-right:3px" alt=""> Bagikan</button>
+      <button class="btn-sm btn-del" id="deleteBtn" onclick="deleteCard()"><img src="https://api.iconify.design/game-icons/trash-can.svg?height=12" class="gi" style="margin-right:3px" alt=""> Hapus</button>
+      <button class="btn-sm" onclick="document.getElementById('detailOverlay').classList.remove('active')"><img src="https://api.iconify.design/game-icons/cancel.svg?height=12" class="gi" style="margin-right:3px" alt=""> Tutup</button>
     </div>
   </div>
 </div>
@@ -707,6 +711,12 @@ let collection = [];
 let audioCtx = null;
 let currentPokeName = '';
 const pokeIdCache = {};
+function gi(icon, size = 16) {
+  return `<img class="gi" src="https://api.iconify.design/game-icons/${icon}.svg?height=${size}" style="width:${size}px;height:${size}px" alt="">`;
+}
+function digiError(el) {
+  el.parentElement.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);font-size:2rem;text-align:center;padding:10px;word-break:break-word"><img src="https://api.iconify.design/game-icons/card-random.svg?height=32" style="width:32px;height:32px;display:block;margin:0 auto"><br>' + (el.alt || 'Digimon') + '</div>';
+}
 
 // ======== HELPERS ========
 function fetchJSON(url, timeout = TIMEOUT) {
@@ -765,11 +775,11 @@ async function switchMode(mode) {
         <text x="128" y="138" text-anchor="middle" font-size="80" fill="#fff" font-weight="bold">D</text>
       </svg>`;
     document.getElementById('titleText').textContent = 'BREWEK DIGIMON KUY';
-    document.getElementById('subText').textContent = '✨ Buka pack Digimon, kumpulin karti Digimon!';
+    document.getElementById('subText').innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Buka pack Digimon, kumpulin karti Digimon!';
     document.getElementById('pokeInfo').innerHTML = '';
     document.getElementById('collFilter').innerHTML =
       `<option value="all">Semua</option>
-       <option value="Rare">Rare ✨</option>
+       <option value="Rare">Rare \u2728</option>
        <option value="Super Rare">Super Rare</option>
        <option value="Secret Rare">Secret Rare</option>
        <option value="Common">Common</option>
@@ -783,10 +793,10 @@ async function switchMode(mode) {
         <circle cx="128" cy="128" r="16" fill="#333"/>
       </svg>`;
     document.getElementById('titleText').textContent = 'BREWEK POKÉMON KUY';
-    document.getElementById('subText').textContent = '✨ Buka pack, kumpulin, pamerin ke temen-temen!';
+    document.getElementById('subText').innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Buka pack, kumpulin, pamerin ke temen-temen!';
     document.getElementById('collFilter').innerHTML =
       `<option value="all">Semua</option>
-       <option value="Rare">Rare ✨</option>
+       <option value="Rare">Rare \u2728</option>
        <option value="Ultra">Ultra Rare</option>
        <option value="Secret">Secret Rare</option>
        <option value="Common">Common</option>
@@ -801,9 +811,7 @@ async function switchMode(mode) {
   document.getElementById('navCollection').classList.remove('active');
   document.getElementById('homeContent').style.display = 'none';
   document.getElementById('pikaLoading').style.display = 'block';
-  document.getElementById('pikaLoading').innerHTML = '';
-  try { lucide.createIcons(); } catch(e) {}
-  init();
+  document.getElementById('pikaLoading').innerHTML = '';init();
 }
 
 // ======== DIGIMON DATA ========
@@ -867,11 +875,11 @@ async function loadDigimonSets() {
       <div class="digi-loading">
         <div class="digi-track">
           <div class="road"></div>
-          <div class="digi-runner">🦊</div>
+          <div class="digi-runner">${gi('fox-head', 40)}</div>
         </div>
-        <div class="pika-text" style="color:#a855f7">⏱️ ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
+        <div class="pika-text" style="color:#a855f7"><img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" alt=""> ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
         <div class="pika-sub" style="color:var(--muted)">Coba klik tombol di bawah</div>
-        <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid #a855f7;border-radius:10px;background:transparent;color:#a855f7;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit">Coba Lagi 🔄</button>
+        <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid #a855f7;border-radius:10px;background:transparent;color:#a855f7;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit"><img src="https://api.iconify.design/game-icons/cycle.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> Coba Lagi</button>
       </div>`;
   }
 }
@@ -892,15 +900,13 @@ function renderDigimonSets() {
   grid.innerHTML = digimonSets.map((s, i) => `
     <div class="pack-card" onclick="openDigimonPack(${i})">
       <div class="pack-img" style="background:${dgmColors[i % dgmColors.length]}">
-        <span style="font-size:2.5rem;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3))">🦊</span>
+        ${gi('fox-head', 40)}
       </div>
       <div class="pack-name">${s.name}</div>
       <div class="pack-series">Digimon Card Game</div>
-      <div class="pack-total"><i data-lucide="layers" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i> ${s.printedTotal} kartu</div>
+      <div class="pack-total"><img src="https://api.iconify.design/game-icons/stack.svg?height=10" class="gi" style="margin-right:2px" alt=""> ${s.printedTotal} kartu</div>
     </div>
-  `).join('');
-  try { lucide.createIcons(); } catch(e) {}
-}
+  `).join('');}
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
@@ -951,7 +957,7 @@ async function showJoke() {
   try {
     const d = await fetchJSON(JOKE_API, 5000);
     const t = document.getElementById('jokeToast');
-    t.textContent = '😂 ' + (d.joke || '');
+    t.innerHTML = '<img src="https://api.iconify.design/game-icons/sharp-smile.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> ' + (d.joke || '');
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 5000);
   } catch (_) {}
@@ -997,9 +1003,9 @@ async function init() {
         <div class="road"></div>
         <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" style="height:50px">
       </div>
-      <div class="pika-text" style="color:#ef4444">⏱️ ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
+      <div class="pika-text" style="color:#ef4444"><img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" alt=""> ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
       <div class="pika-sub" style="color:var(--muted)">Coba klik tombol di bawah</div>
-      <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid var(--pika);border-radius:10px;background:transparent;color:var(--pika);font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit">Coba Lagi 🔄</button>
+      <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid var(--pika);border-radius:10px;background:transparent;color:var(--pika);font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit"><img src="https://api.iconify.design/game-icons/cycle.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> Coba Lagi</button>
     `;
   }
 }
@@ -1028,11 +1034,9 @@ function renderSets(sets) {
       </div>
       <div class="pack-name">${s.name}</div>
       <div class="pack-series">${s.series}</div>
-      <div class="pack-total"><i data-lucide="layers" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i> ${s.printedTotal} kartu</div>
+      <div class="pack-total"><img src="https://api.iconify.design/game-icons/stack.svg?height=10" class="gi" style="margin-right:2px" alt=""> ${s.printedTotal} kartu</div>
     </div>
-  `}).join('');
-  try { lucide.createIcons(); } catch(e) {}
-}
+  `}).join('');}
 // ======== UPDATE STATS ========
 function updateStats() {
   const total = collection.length;
@@ -1064,7 +1068,7 @@ async function openPack(setId) {
 
   ov.classList.add('active');
   tc.style.display = 'flex'; cr.classList.remove('active');
-  tp.className = 'tear-pack'; tp.innerHTML = '🎁<div class="click-hint">Klik untuk robek!</div>';
+  tp.className = 'tear-pack'; tp.innerHTML = '<img src="https://api.iconify.design/game-icons/present.svg?height=48" class="gi" alt=""><div class="click-hint">Klik untuk robek!</div>';
   tt.textContent = 'Klik pack untuk membuka';
   lb.style.width = '0%'; lb.style.display = '';
 
@@ -1075,7 +1079,7 @@ async function openPack(setId) {
   await new Promise(resolve => {
     tp.onclick = async function clickHandler() {
       tp.onclick = null;
-      tp.innerHTML = '🎁';
+      tp.innerHTML = '<img src="https://api.iconify.design/game-icons/present.svg?height=48" class="gi" alt="">';
       tt.textContent = 'Mengambil data kartu...';
       lb.style.width = '0%';
 
@@ -1090,7 +1094,7 @@ async function openPack(setId) {
         clearInterval(prog); lb.style.width = '100%';
         playSound('tear'); await delay(200);
         tp.classList.add('tear-flash');
-        tt.textContent = '✨ Kartu-kartu muncul!';
+        tt.innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Kartu-kartu muncul!';
         lb.style.display = 'none';
 
         const rareCount = openedCards.filter(c => isRare(c.rarity)).length;
@@ -1099,7 +1103,7 @@ async function openPack(setId) {
         await delay(500);
         tc.style.display = 'none'; cr.classList.add('active');
 
-        document.getElementById('revealSetName').textContent = `✨ ${set.name}`;
+        document.getElementById('revealSetName').innerHTML = `<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ${set.name}`;
         document.getElementById('revealSetInfo').textContent = `${set.series} — ${openedCards.length} kartu`;
 
         const grid = document.getElementById('cardsGrid');
@@ -1109,13 +1113,10 @@ async function openPack(setId) {
           const rare = isRare(c.rarity);
           return `<div class="card-item rar-${r} ${rare?'rare-pulse':''}" style="transition-delay:${i*0.07}s" data-index="${i}" onclick="showDetail(${i})">
             <img src="${c.images?.small||''}" alt="${c.name}" loading="lazy">
-            <div class="rarity-badge">${rare?'<i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i>':''}${rn}</div>
-            <div class="card-info">${c.name}${rare?' <i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i>':''}</div>
+            <div class="rarity-badge">${rare?'<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" style="margin-right:2px" alt="">':''}${rn}</div>
+            <div class="card-info">${c.name}${rare?' <img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt="">':''}</div>
           </div>`;
-        }).join('');
-        try { lucide.createIcons(); } catch(e) {}
-
-        requestAnimationFrame(() => {
+        }).join('');requestAnimationFrame(() => {
           requestAnimationFrame(() => document.querySelectorAll('.card-item').forEach(el => el.classList.add('revealed')));
         });
 
@@ -1139,7 +1140,7 @@ async function openPack(setId) {
         resolve();
       } catch (err) {
         clearInterval(prog);
-        tt.textContent = err.name === 'AbortError' ? '⏱️ Timeout — coba lagi' : '❌ ' + err.message;
+        tt.innerHTML = err.name === 'AbortError' ? '<img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Timeout — coba lagi' : '<img src="https://api.iconify.design/game-icons/cancel.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ' + err.message;
         await delay(1500); closePack(); resolve();
       }
     };
@@ -1164,7 +1165,7 @@ async function openDigimonPack(index) {
   tp.className = 'tear-pack';
   tp.style.background = 'linear-gradient(145deg, #a855f7, #7c3aed)';
   tp.style.boxShadow = '0 20px 60px rgba(168,85,247,0.3)';
-  tp.innerHTML = '🦊<div class="click-hint">Klik untuk robek!</div>';
+  tp.innerHTML = `${gi('fox-head', 48)}<div class="click-hint">Klik untuk robek!</div>`;
   tt.textContent = 'Klik pack Digimon untuk membuka';
   lb.style.width = '0%'; lb.style.display = '';
 
@@ -1174,7 +1175,7 @@ async function openDigimonPack(index) {
   await new Promise(resolve => {
     tp.onclick = async function clickHandler() {
       tp.onclick = null;
-      tp.innerHTML = '🦊';
+      tp.innerHTML = `${gi('fox-head', 48)}`;
       tt.textContent = 'Mengambil data kartu Digimon...';
       lb.style.width = '0%';
 
@@ -1188,7 +1189,7 @@ async function openDigimonPack(index) {
         clearInterval(prog); lb.style.width = '100%';
         playSound('tear'); await delay(200);
         tp.classList.add('tear-flash');
-        tt.textContent = '✨ Kartu Digimon muncul!';
+        tt.innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Kartu Digimon muncul!';
         lb.style.display = 'none';
 
         const rareCount = openedCards.filter(c => isDigimonRare(c.rarity)).length;
@@ -1197,7 +1198,7 @@ async function openDigimonPack(index) {
         await delay(500);
         tc.style.display = 'none'; cr.classList.add('active');
 
-        document.getElementById('revealSetName').textContent = `🦊 ${pack.name}`;
+        document.getElementById('revealSetName').innerHTML = `${gi('fox-head', 20)} ${pack.name}`;
         document.getElementById('revealSetInfo').textContent = `Digimon TCG — ${openedCards.length} kartu`;
 
         const grid = document.getElementById('cardsGrid');
@@ -1205,14 +1206,11 @@ async function openDigimonPack(index) {
           const r = (c.rarity || 'Common').replace(/\s+/g, '_');
           const rare = isDigimonRare(c.rarity);
           return `<div class="card-item rar-${r} ${rare?'rare-pulse':''}" style="transition-delay:${i*0.07}s" data-index="${i}" onclick="showDigimonDetail(${i})">
-            <img src="${DIGIMON_IMG}/${c.id}" alt="${c.name}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);font-size:2rem;text-align:center;padding:10px;word-break:break-word><i data-lucide=\\"bug-play\\" style=width:32px;height:32px></i><br>${c.name}</div>'">
-            <div class="rarity-badge">${rare?'<i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i>':''}${c.rarity||'Common'}</div>
-            <div class="card-info">${c.name}${rare?' <i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i>':''}</div>
+            <img src="${DIGIMON_IMG}/${c.id}" alt="${c.name}" loading="lazy" onerror="digiError(this)">
+            <div class="rarity-badge">${rare?'<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" style="margin-right:2px" alt="">':''}${c.rarity||'Common'}</div>
+            <div class="card-info">${c.name}${rare?' <img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt="">':''}</div>
           </div>`;
-        }).join('');
-        try { lucide.createIcons(); } catch(e) {}
-
-        requestAnimationFrame(() => {
+        }).join('');requestAnimationFrame(() => {
           requestAnimationFrame(() => document.querySelectorAll('.card-item').forEach(el => el.classList.add('revealed')));
         });
 
@@ -1242,7 +1240,7 @@ async function openDigimonPack(index) {
         resolve();
       } catch (err) {
         clearInterval(prog);
-        tt.textContent = err.name === 'AbortError' ? '⏱️ Timeout — coba lagi' : '❌ ' + err.message;
+        tt.innerHTML = err.name === 'AbortError' ? '<img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Timeout — coba lagi' : '<img src="https://api.iconify.design/game-icons/cancel.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ' + err.message;
         await delay(1500); closePack(); resolve();
       }
     };
@@ -1282,7 +1280,7 @@ function showDigimonDetail(index) {
       ${c.digi_type ? `<div class="digi-row"><span class="digi-label">Digi-Type</span><span class="digi-value">${c.digi_type}</span></div>` : ''}
       ${c.evolution_cost !== undefined && c.evolution_cost !== null ? `<div class="digi-row"><span class="digi-label">Evo Cost</span><span class="digi-value">${c.evolution_cost}</span></div>` : ''}
       ${c.evolution_color ? `<div class="digi-row"><span class="digi-label">Evo Color</span><span class="digi-value"><span class="digi-badge digi-${c.evolution_color}">${c.evolution_color}</span></span></div>` : ''}
-      ${c.main_effect ? `<div class="digi-effect">📜 ${c.main_effect}</div>` : ''}
+      ${c.main_effect ? `<div class="digi-effect"><img src="https://api.iconify.design/game-icons/tied-scroll.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ${c.main_effect}</div>` : ''}
     </div>`;
 
   ov.classList.add('active');
@@ -1306,9 +1304,9 @@ async function showDetail(index) {
   document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types].filter(Boolean).join(' | ');
   const pr = c.tcgplayer?.prices;
   const keys = pr ? Object.keys(pr) : [];
-  document.getElementById('detailPrice').textContent = keys.length ? `💰 Market: $${(pr[keys[0]].market||0).toFixed(2)}` : '';
+  document.getElementById('detailPrice').innerHTML = keys.length ? `<img src="https://api.iconify.design/game-icons/crown-coin.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Market: $${(pr[keys[0]].market||0).toFixed(2)}` : '';
   document.getElementById('translationResult').textContent = '';
-  document.getElementById('pokeInfo').innerHTML = '<div style="font-size:0.8rem;color:var(--muted)">🔍 Mencari data Pokémon...</div>';
+  document.getElementById('pokeInfo').innerHTML = '<div style="font-size:0.8rem;color:var(--muted)"><img src="https://api.iconify.design/game-icons/magnifying-glass.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Mencari data Pokémon...</div>';
 
   currentPokeName = c.name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\s+/g, '-');
   if (currentPokeName.startsWith('mega')) currentPokeName = currentPokeName.replace('mega', '');
@@ -1359,7 +1357,7 @@ async function showDetail(index) {
         const items = await Promise.all(list.map(async (n, i) => {
           const id = await getPokeId(n);
           const img = id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png` : '';
-          return (i > 0 ? '<span class="evo-arrow">→</span>' : '') +
+          return (i > 0 ? '<span class="evo-arrow"><img src="https://api.iconify.design/game-icons/arrowhead.svg?height=12" class="gi ic-sm" alt=""></span>' : '') +
             `<div class="evo-item"><img src="${img}" onerror="this.style.display='none'"><span>${n.charAt(0).toUpperCase()+n.slice(1)}</span></div>`;
         }));
         evoHtml = `<div class="evo-row">${items.join('')}</div>`;
@@ -1406,7 +1404,7 @@ async function translateCard() {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
     el.textContent = '"' + (d.contents?.translated || name) + '"';
-  } catch { el.textContent = '✨ ' + name.split('').reverse().join('') + ' ✨'; }
+  } catch { el.innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" alt=""> ' + name.split('').reverse().join('') + ' <img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" alt="">'; }
 }
 
 // ======== COLLECTION PAGE ========
@@ -1444,16 +1442,14 @@ function renderCollection() {
     const rare = isRareFn(c.rarity);
     return `<div class="card-item rar-${r}" style="transition-delay:${Math.min(i,20)*0.03}s" onclick="showCollectionDetail(${i})">
       <img src="${c.image||''}" alt="${c.name}" loading="lazy">
-      <div class="rarity-badge">${rare?'<i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle;margin-right:2px"></i>':''}${c.rarity||'Common'}</div>
-      <div class="card-info">${c.name}${rare?' <i data-lucide="sparkles" style="width:10px;height:10px;vertical-align:middle"></i>':''} · ${c.set||''}</div>
+      <div class="rarity-badge">${rare?'<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" style="margin-right:2px" alt="">':''}${c.rarity||'Common'}</div>
+      <div class="card-info">${c.name}${rare?' <img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt="">':''} · ${c.set||''}</div>
     </div>`;
   }).join('');
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => document.querySelectorAll('#collGrid .card-item').forEach(el => el.classList.add('revealed')));
-  });
-  try { lucide.createIcons(); } catch(e) {}
-}
+  });}
 
 function getFilteredCollection() {
   const q = document.getElementById('collSearch').value.toLowerCase();
@@ -1484,7 +1480,7 @@ function showCollectionDetail(index) {
   document.getElementById('detailImg').src = c.imageLarge || c.image || '';
   document.getElementById('detailName').textContent = `${c.name} — ${c.supertype || ''}`;
   const types = (c.types || []).join(', ');
-  document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types, `📦 ${c.set||''}`].filter(Boolean).join(' | ');
+  document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types, c.set||''].filter(Boolean).join(' | ');
   document.getElementById('detailPrice').textContent = '';
   document.getElementById('translationResult').textContent = '';
 
@@ -1499,7 +1495,7 @@ function showCollectionDetail(index) {
         ${c.dp ? `<div class="digi-row"><span class="digi-label">DP</span><span class="digi-value">${c.dp}</span></div>` : ''}
         ${c.attribute ? `<div class="digi-row"><span class="digi-label">Attribute</span><span class="digi-value">${c.attribute}</span></div>` : ''}
         ${c.digiType ? `<div class="digi-row"><span class="digi-label">Digi-Type</span><span class="digi-value">${c.digiType}</span></div>` : ''}
-        ${c.effect ? `<div class="digi-effect">📜 ${c.effect}</div>` : ''}
+        ${c.effect ? `<div class="digi-effect"><img src="https://api.iconify.design/game-icons/tied-scroll.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ${c.effect}</div>` : ''}
         <div class="digi-row"><span class="digi-label">Set</span><span class="digi-value">${c.set||''}</span></div>
       </div>`;
   } else {
@@ -1552,7 +1548,7 @@ function shareCard() {
   } else {
     navigator.clipboard?.writeText(text).then(() => {
       const t = document.getElementById('jokeToast');
-      t.textContent = '📋 Teks berhasil disalin!';
+      t.innerHTML = '<img src="https://api.iconify.design/game-icons/paper.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> Teks berhasil disalin!';
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
     }).catch(() => {});
