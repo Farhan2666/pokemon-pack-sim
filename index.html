@@ -467,6 +467,92 @@
       .poke-box .stat-grid { grid-template-columns: repeat(3,1fr); }
       nav button { font-size: 0.7rem; padding: 8px 10px; }
     }
+
+    /* ---- Mode Tabs ---- */
+    .mode-tabs {
+      display: flex; gap: 4px; justify-content: center; margin: 4px 0 10px;
+    }
+    .mode-tabs button {
+      padding: 6px 20px; border: none; border-radius: 8px;
+      background: transparent; color: var(--muted); font-weight: 700; font-size: 0.75rem;
+      cursor: pointer; transition: all 0.3s; font-family: inherit;
+      border: 1px solid transparent;
+    }
+    .mode-tabs button.active-pkm {
+      background: rgba(255,203,5,0.15); color: var(--pika); border-color: rgba(255,203,5,0.25);
+    }
+    .mode-tabs button.active-dgm {
+      background: rgba(168,85,247,0.15); color: #a855f7; border-color: rgba(168,85,247,0.25);
+    }
+    .mode-tabs button:hover:not(.active-pkm):not(.active-dgm) { color: var(--text); }
+
+    /* ---- Digimon Theme ---- */
+    body.mode-digimon { --pika: #a855f7; --pika-dark: #9333ea; --bg: #0a0a1a; --card-bg: #18182e; }
+    body.mode-digimon .bg-balls span { background: radial-gradient(circle at 35% 35%, rgba(168,85,247,0.06), transparent 70%); border-color: rgba(168,85,247,0.04); }
+    body.mode-digimon h1 { background: linear-gradient(135deg, #a855f7, #ec4899, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    body.mode-digimon nav button.active { background: rgba(168,85,247,0.12); color: #a855f7; }
+    body.mode-digimon .nav-badge { background: rgba(168,85,247,0.15); color: #a855f7; }
+    body.mode-digimon nav button.active .nav-badge { background: #a855f7; color: #fff; }
+    body.mode-digimon .pack-card:hover { border-color: #a855f7; box-shadow: 0 12px 30px rgba(168,85,247,0.12); }
+    body.mode-digimon .pack-card:hover .pack-img { transform: scale(1.06); }
+
+    /* ---- Digimon Color Badges ---- */
+    .digi-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 12px;
+      font-size: 0.65rem; font-weight: 600; text-transform: uppercase; margin: 2px;
+    }
+    .digi-Red { background: #e74c3c; color: #fff; }
+    .digi-Blue { background: #3498db; color: #fff; }
+    .digi-Yellow { background: #f1c40f; color: #000; }
+    .digi-Green { background: #2ecc71; color: #000; }
+    .digi-Purple { background: #9b59b6; color: #fff; }
+    .digi-Black { background: #2c3e50; color: #fff; }
+    .digi-White { background: #ecf0f1; color: #000; }
+    .digi-Colorless { background: #95a5a6; color: #000; }
+    .digi-Pink { background: #fd79a8; color: #000; }
+
+    .digi-detail-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 14px;
+      margin-top: 10px; text-align: left;
+    }
+    .digi-detail-box .digi-row {
+      display: flex; justify-content: space-between; padding: 3px 0;
+      font-size: 0.78rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .digi-detail-box .digi-row:last-child { border-bottom: none; }
+    .digi-detail-box .digi-label { color: var(--muted); }
+    .digi-detail-box .digi-value { font-weight: 600; }
+    .digi-detail-box .digi-effect {
+      margin-top: 8px; font-size: 0.75rem; color: #cbd5e1;
+      background: rgba(255,255,255,0.03); border-radius: 8px; padding: 8px;
+    }
+
+    /* ---- Digimon Loading ---- */
+    .digi-loading .digi-track {
+      position: relative; height: 80px; margin: 0 auto 16px; max-width: 300px; overflow: hidden;
+    }
+    .digi-loading .digi-track .road {
+      position: absolute; bottom: 10px; left: 0; right: 0;
+      height: 3px; background: rgba(168,85,247,0.1); border-radius: 2px;
+    }
+    .digi-loading .digi-track .digi-runner {
+      position: absolute; bottom: 0;
+      font-size: 2.5rem;
+      animation: digiRun 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes digiRun {
+      0% { transform: translateX(-20px) scaleX(1); }
+      48% { transform: translateX(260px) scaleX(1); }
+      50% { transform: translateX(260px) scaleX(-1); }
+      98% { transform: translateX(-20px) scaleX(-1); }
+      100% { transform: translateX(-20px) scaleX(1); }
+    }
+
+    /* ---- Digimon Nav Button Icons ---- */
+    .mode-icon { width: 16px; height: 16px; vertical-align: middle; margin-right: 2px; }
   </style>
 </head>
 <body>
@@ -476,17 +562,17 @@
 
 <div class="app">
     <header>
-      <h1>
-        <svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256">
-          <circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/>
-          <path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/>
-          <circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/>
-          <circle cx="128" cy="128" r="16" fill="#333"/>
-        </svg>
-        BREWEK POKÉMON KUY
+      <h1 id="mainTitle">
+        <span id="titleIcon"><svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="#333"/></svg></span>
+        <span id="titleText">BREWEK POKÉMON KUY</span>
       </h1>
-      <div class="sub">✨ Buka pack, kumpulin, pamerin ke temen-temen!</div>
+      <div class="sub" id="subText">✨ Buka pack, kumpulin, pamerin ke temen-temen!</div>
     </header>
+
+    <div class="mode-tabs">
+      <button onclick="switchMode('pokemon')" id="modePkm" class="active-pkm">⚡ Pokémon</button>
+      <button onclick="switchMode('digimon')" id="modeDgm">🦊 Digimon</button>
+    </div>
 
   <nav>
     <button class="active" onclick="showPage('home')" id="navHome">
@@ -603,7 +689,14 @@ const TIMEOUT = 25000;
 const STORAGE_KEY = 'brewek_koleksi';
 const TYPE_ICONS = 'https://unpkg.com/@pokemonle/icons-svg@latest/icons';
 
+const DIGIMON_API = 'https://digimoncard.io/api-public';
+const DIGIMON_IMG = 'https://images.digimoncard.io/img/cards';
+const DIGIMON_STORAGE = 'digimon_koleksi';
+
+let gameMode = 'pokemon';
 let allSets = [];
+let digimonSets = [];
+let digimonAllCards = [];
 let openedCards = [];
 let collection = [];
 let audioCtx = null;
@@ -621,12 +714,14 @@ function fetchJSON(url, timeout = TIMEOUT) {
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+function getStorageKey() { return gameMode === 'pokemon' ? STORAGE_KEY : DIGIMON_STORAGE; }
+
 function loadCollection() {
-  try { collection = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { collection = []; }
+  try { collection = JSON.parse(localStorage.getItem(getStorageKey()) || '[]'); } catch { collection = []; }
 }
 
 function saveCollection() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(collection));
+  localStorage.setItem(getStorageKey(), JSON.stringify(collection));
 }
 
 function isRare(rarity) {
@@ -634,7 +729,171 @@ function isRare(rarity) {
   return /Rare|Ultra|Secret|Shiny/i.test(rarity);
 }
 
-// ======== AUDIO ========
+// ======== DIGIMON HELPERS ========
+function isDigimonRare(r) {
+  if (!r) return false;
+  const rn = (r+'').toLowerCase();
+  return ['rare','super','secret','alt art','promo'].some(s => rn.includes(s));
+}
+
+// ======== MODE SWITCHING ========
+async function switchMode(mode) {
+  if (mode === gameMode) return;
+  // Close any open overlays
+  document.getElementById('packOverlay').classList.remove('active');
+  document.getElementById('detailOverlay').classList.remove('active');
+  isOpening = false;
+
+  gameMode = mode;
+  document.body.classList.toggle('mode-digimon', mode === 'digimon');
+
+  document.getElementById('modePkm').className = mode === 'pokemon' ? 'active-pkm' : '';
+  document.getElementById('modeDgm').className = mode === 'digimon' ? 'active-dgm' : '';
+
+  if (mode === 'digimon') {
+    document.getElementById('titleIcon').innerHTML =
+      `<svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256">
+        <circle cx="128" cy="128" r="120" fill="#a855f7" stroke="#9333ea" stroke-width="8"/>
+        <path d="M128 8a120 120 0 0 1 0 240" fill="#7c3aed"/>
+        <circle cx="128" cy="128" r="36" fill="#a855f7" stroke="#9333ea" stroke-width="8"/>
+        <circle cx="128" cy="128" r="16" fill="#9333ea"/>
+        <text x="128" y="138" text-anchor="middle" font-size="80" fill="#fff" font-weight="bold">D</text>
+      </svg>`;
+    document.getElementById('titleText').textContent = 'BREWEK DIGIMON KUY';
+    document.getElementById('subText').textContent = '✨ Buka pack Digimon, kumpulin karti Digimon!';
+    document.getElementById('pokeInfo').innerHTML = '';
+    document.getElementById('collFilter').innerHTML =
+      `<option value="all">Semua</option>
+       <option value="Rare">Rare ✨</option>
+       <option value="Super Rare">Super Rare</option>
+       <option value="Secret Rare">Secret Rare</option>
+       <option value="Common">Common</option>
+       <option value="Uncommon">Uncommon</option>`;
+  } else {
+    document.getElementById('titleIcon').innerHTML =
+      `<svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256">
+        <circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/>
+        <path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/>
+        <circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/>
+        <circle cx="128" cy="128" r="16" fill="#333"/>
+      </svg>`;
+    document.getElementById('titleText').textContent = 'BREWEK POKÉMON KUY';
+    document.getElementById('subText').textContent = '✨ Buka pack, kumpulin, pamerin ke temen-temen!';
+    document.getElementById('collFilter').innerHTML =
+      `<option value="all">Semua</option>
+       <option value="Rare">Rare ✨</option>
+       <option value="Ultra">Ultra Rare</option>
+       <option value="Secret">Secret Rare</option>
+       <option value="Common">Common</option>
+       <option value="Uncommon">Uncommon</option>`;
+  }
+
+  loadCollection();
+  updateStats();
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pageHome').classList.add('active');
+  document.getElementById('navHome').classList.add('active');
+  document.getElementById('navCollection').classList.remove('active');
+  document.getElementById('homeContent').style.display = 'none';
+  document.getElementById('pikaLoading').style.display = 'block';
+  document.getElementById('pikaLoading').innerHTML = '';
+  init();
+}
+
+// ======== DIGIMON DATA ========
+async function loadDigimonSets() {
+  const pikaText = document.querySelector('.pika-text');
+  const pikaSub = document.querySelector('.pika-sub');
+  const pikaImg = document.querySelector('.pika-track img');
+
+  if (pikaImg) {
+    pikaImg.src = 'https://digi-api.com/images/digimon/w/Agumon.png';
+    pikaImg.style.height = '50px';
+    pikaImg.style.imageRendering = 'auto';
+  }
+
+  // Use cached data if available
+  if (digimonAllCards.length > 0) {
+    renderDigimonSets();
+    document.getElementById('pikaLoading').style.display = 'none';
+    document.getElementById('homeContent').style.display = 'block';
+    return;
+  }
+
+  pikaText.textContent = 'Download data kartu Digimon...';
+  pikaSub.textContent = 'Agumon lagi lari cari data kartu (sekitar 5MB)';
+
+  try {
+    const cards = await fetchJSON(`${DIGIMON_API}/search?series=Digimon+Card+Game&limit=5000`, 60000);
+    if (!Array.isArray(cards)) throw new Error('Invalid response');
+    digimonAllCards = cards;
+
+    // Build set map, including all valid booster/starter sets
+    const setMap = {};
+    for (const card of cards) {
+      for (const s of card.set_name || []) {
+        const exclude = s.includes('Memorial') || s.includes('Playmat') || s.includes('Dash Pack') ||
+          s.includes('PB-09') || s.startsWith('BTC-') || /^BO-/.test(s);
+        if (exclude) continue;
+        if (!setMap[s]) setMap[s] = { name: s, count: 0, cards: [] };
+        setMap[s].count++;
+        setMap[s].cards.push(card);
+      }
+    }
+
+    digimonSets = Object.entries(setMap)
+      .filter(([_, s]) => s.count >= 15)
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 45)
+      .map(([name, info]) => ({
+        id: name,
+        name: name.replace(/^BT-\d+:\s*/, '').replace(/^EX-\d+:\s*/, '').replace(/^ST\d+:\s*/, '').replace(/^AD-\d+:\s*/, ''),
+        fullName: name,
+        printedTotal: info.count,
+        cards: info.cards
+      }));
+
+    document.getElementById('pikaLoading').style.display = 'none';
+    document.getElementById('homeContent').style.display = 'block';
+    renderDigimonSets();
+  } catch (err) {
+    document.getElementById('pikaLoading').innerHTML = `
+      <div class="digi-loading">
+        <div class="digi-track">
+          <div class="road"></div>
+          <div class="digi-runner">🦊</div>
+        </div>
+        <div class="pika-text" style="color:#a855f7">⏱️ ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
+        <div class="pika-sub" style="color:var(--muted)">Coba klik tombol di bawah</div>
+        <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid #a855f7;border-radius:10px;background:transparent;color:#a855f7;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit">Coba Lagi 🔄</button>
+      </div>`;
+  }
+}
+
+function renderDigimonSets() {
+  const grid = document.getElementById('setsGrid');
+  const dgmColors = [
+    'linear-gradient(135deg,#7c3aed,#a855f7)',
+    'linear-gradient(135deg,#2563eb,#06b6d4)',
+    'linear-gradient(135deg,#dc2626,#f97316)',
+    'linear-gradient(135deg,#059669,#10b981)',
+    'linear-gradient(135deg,#9333ea,#ec4899)',
+    'linear-gradient(135deg,#d97706,#f59e0b)',
+    'linear-gradient(135deg,#374151,#6b7280)',
+    'linear-gradient(135deg,#0891b2,#06b6d4)',
+  ];
+
+  grid.innerHTML = digimonSets.map((s, i) => `
+    <div class="pack-card" onclick="openDigimonPack(${i})">
+      <div class="pack-img" style="background:${dgmColors[i % dgmColors.length]}">
+        <span style="font-size:2.5rem;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3))">🦊</span>
+      </div>
+      <div class="pack-name">${s.name}</div>
+      <div class="pack-series">Digimon Card Game</div>
+      <div class="pack-total">${s.printedTotal} kartu</div>
+    </div>
+  `).join('');
+}
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
@@ -704,8 +963,18 @@ function showPage(name) {
 async function init() {
   const pikaText = document.querySelector('.pika-text');
   const pikaSub = document.querySelector('.pika-sub');
+  const pikaImg = document.querySelector('.pika-track img');
   loadCollection();
   updateStats();
+
+  if (gameMode === 'digimon') {
+    if (pikaImg) {
+      pikaImg.src = 'https://digi-api.com/images/digimon/w/Agumon.png';
+      pikaImg.style.imageRendering = 'auto';
+    }
+    await loadDigimonSets();
+    return;
+  }
 
   try {
     pikaText.textContent = 'Menghubungi Pokémon TCG API...';
@@ -761,7 +1030,8 @@ function renderSets(sets) {
 function updateStats() {
   const total = collection.length;
   const unique = new Set(collection.map(c => c.id)).size;
-  const rares = collection.filter(c => isRare(c.rarity)).length;
+  const isRareFn = gameMode === 'digimon' ? isDigimonRare : isRare;
+  const rares = collection.filter(c => isRareFn(c.rarity)).length;
   document.getElementById('statPacks').textContent = Math.ceil(total / 10) || 0;
   document.getElementById('statCards').textContent = total;
   document.getElementById('statRare').textContent = rares;
@@ -867,6 +1137,146 @@ async function openPack(setId) {
     };
   });
   isOpening = false;
+}
+
+// ======== DIGIMON PACK OPENING ========
+async function openDigimonPack(index) {
+  if (isOpening) return;
+  isOpening = true;
+
+  const ov = document.getElementById('packOverlay');
+  const tc = document.getElementById('tearContainer');
+  const cr = document.getElementById('cardsReveal');
+  const tp = document.getElementById('tearPack');
+  const tt = document.getElementById('tearText');
+  const lb = document.getElementById('loadingBar');
+
+  ov.classList.add('active');
+  tc.style.display = 'flex'; cr.classList.remove('active');
+  tp.className = 'tear-pack';
+  tp.style.background = 'linear-gradient(145deg, #a855f7, #7c3aed)';
+  tp.style.boxShadow = '0 20px 60px rgba(168,85,247,0.3)';
+  tp.innerHTML = '🦊<div class="click-hint">Klik untuk robek!</div>';
+  tt.textContent = 'Klik pack Digimon untuk membuka';
+  lb.style.width = '0%'; lb.style.display = '';
+
+  const pack = digimonSets[index];
+  if (!pack) { isOpening = false; return; }
+
+  await new Promise(resolve => {
+    tp.onclick = async function clickHandler() {
+      tp.onclick = null;
+      tp.innerHTML = '🦊';
+      tt.textContent = 'Mengambil data kartu Digimon...';
+      lb.style.width = '0%';
+
+      let p = 0;
+      const prog = setInterval(() => { p = Math.min(p + 3, 85); lb.style.width = p + '%'; }, 600);
+
+      try {
+        const pool = pack.cards.sort(() => Math.random() - 0.5).slice(0, 10);
+        openedCards = pool;
+
+        clearInterval(prog); lb.style.width = '100%';
+        playSound('tear'); await delay(200);
+        tp.classList.add('tear-flash');
+        tt.textContent = '✨ Kartu Digimon muncul!';
+        lb.style.display = 'none';
+
+        const rareCount = openedCards.filter(c => isDigimonRare(c.rarity)).length;
+        if (rareCount > 0) setTimeout(() => { playSound('rare'); fireConfetti(); }, 700);
+
+        await delay(500);
+        tc.style.display = 'none'; cr.classList.add('active');
+
+        document.getElementById('revealSetName').textContent = `🦊 ${pack.name}`;
+        document.getElementById('revealSetInfo').textContent = `Digimon TCG — ${openedCards.length} kartu`;
+
+        const grid = document.getElementById('cardsGrid');
+        grid.innerHTML = openedCards.map((c, i) => {
+          const r = (c.rarity || 'Common').replace(/\s+/g, '_');
+          const rare = isDigimonRare(c.rarity);
+          return `<div class="card-item rar-${r} ${rare?'rare-pulse':''}" style="transition-delay:${i*0.07}s" data-index="${i}" onclick="showDigimonDetail(${i})">
+            <img src="${DIGIMON_IMG}/${c.id}" alt="${c.name}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);font-size:2rem;text-align:center;padding:10px;word-break:break-word>🦊<br>${c.name}</div>'">
+            <div class="rarity-badge">${c.rarity||'Common'}</div>
+            <div class="card-info">${c.name}${rare?' ⭐':''}</div>
+          </div>`;
+        }).join('');
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => document.querySelectorAll('.card-item').forEach(el => el.classList.add('revealed')));
+        });
+
+        if (openedCards.every(c => !isDigimonRare(c.rarity))) {
+          playSound('common');
+        }
+
+        openedCards.forEach(c => {
+          collection.push({
+            id: c.id, name: c.name, rarity: c.rarity, supertype: c.type,
+            types: [c.color].filter(Boolean), hp: c.dp || c.level,
+            set: pack.name, setId: pack.fullName,
+            image: `${DIGIMON_IMG}/${c.id}`,
+            imageLarge: `${DIGIMON_IMG}/${c.id}`,
+            stage: c.stage || '',
+            attribute: c.attribute || '',
+            color: c.color || '',
+            digiType: c.digi_type || '',
+            level: c.level || '',
+            effect: c.main_effect || '',
+            openedAt: Date.now()
+          });
+        });
+        saveCollection();
+        updateStats();
+
+        resolve();
+      } catch (err) {
+        clearInterval(prog);
+        tt.textContent = err.name === 'AbortError' ? '⏱️ Timeout — coba lagi' : '❌ ' + err.message;
+        await delay(1500); closePack(); resolve();
+      }
+    };
+  });
+  isOpening = false;
+}
+
+// ======== DIGIMON DETAIL ========
+function showDigimonDetail(index) {
+  const c = openedCards[index];
+  if (!c) return;
+  const ov = document.getElementById('detailOverlay');
+
+  document.getElementById('detailImg').src = `${DIGIMON_IMG}/${c.id}`;
+  document.getElementById('detailImg').onerror = function() {
+    this.style.display = 'none';
+  };
+  document.getElementById('detailName').textContent = `${c.name} — ${c.type || 'Digimon'}`;
+  document.getElementById('detailSub').textContent = [c.rarity, c.color, c.stage, c.level ? `Lv.${c.level}` : '', c.dp ? `DP ${c.dp}` : ''].filter(Boolean).join(' | ');
+  document.getElementById('detailPrice').textContent = '';
+  document.getElementById('translationResult').textContent = '';
+  document.getElementById('translateBtn').style.display = 'none';
+  document.getElementById('shareBtn').style.display = 'inline-block';
+  document.getElementById('deleteBtn').style.display = 'none';
+
+  const colorBadge = c.color ? `<span class="digi-badge digi-${c.color}">${c.color}</span>` : '';
+
+  document.getElementById('pokeInfo').innerHTML = `
+    <div class="digi-detail-box">
+      ${colorBadge ? `<div style="margin-bottom:6px">${colorBadge}</div>` : ''}
+      <div class="digi-row"><span class="digi-label">Jenis</span><span class="digi-value">${c.type || '-'}</span></div>
+      ${c.stage ? `<div class="digi-row"><span class="digi-label">Stage</span><span class="digi-value">${c.stage}</span></div>` : ''}
+      ${c.level ? `<div class="digi-row"><span class="digi-label">Level</span><span class="digi-value">${c.level}</span></div>` : ''}
+      ${c.dp ? `<div class="digi-row"><span class="digi-label">DP</span><span class="digi-value">${c.dp}</span></div>` : ''}
+      ${c.play_cost ? `<div class="digi-row"><span class="digi-label">Play Cost</span><span class="digi-value">${c.play_cost}</span></div>` : ''}
+      ${c.attribute ? `<div class="digi-row"><span class="digi-label">Attribute</span><span class="digi-value">${c.attribute}</span></div>` : ''}
+      ${c.digi_type ? `<div class="digi-row"><span class="digi-label">Digi-Type</span><span class="digi-value">${c.digi_type}</span></div>` : ''}
+      ${c.evolution_cost !== undefined && c.evolution_cost !== null ? `<div class="digi-row"><span class="digi-label">Evo Cost</span><span class="digi-value">${c.evolution_cost}</span></div>` : ''}
+      ${c.evolution_color ? `<div class="digi-row"><span class="digi-label">Evo Color</span><span class="digi-value"><span class="digi-badge digi-${c.evolution_color}">${c.evolution_color}</span></span></div>` : ''}
+      ${c.main_effect ? `<div class="digi-effect">📜 ${c.main_effect}</div>` : ''}
+    </div>`;
+
+  ov.classList.add('active');
 }
 
 function closePack() {
@@ -1002,9 +1412,10 @@ function renderCollection() {
   let filtered = collection;
   if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
   if (f !== 'all') filtered = filtered.filter(c => {
-    if (f === 'Rare') return isRare(c.rarity);
+    if (f === 'Rare') return gameMode === 'pokemon' ? isRare(c.rarity) : isDigimonRare(c.rarity);
     if (f === 'Ultra') return (c.rarity||'').includes('Ultra');
     if (f === 'Secret') return (c.rarity||'').includes('Secret');
+    if (f === 'Super Rare') return (c.rarity||'') === 'Super Rare';
     return (c.rarity||'') === f;
   });
 
@@ -1033,15 +1444,16 @@ function renderCollection() {
   });
 }
 
- function getFilteredCollection() {
+function getFilteredCollection() {
   const q = document.getElementById('collSearch').value.toLowerCase();
   const f = document.getElementById('collFilter').value;
   let filtered = [...collection];
   if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
   if (f !== 'all') {
-    if (f === 'Rare') filtered = filtered.filter(c => isRare(c.rarity));
+    if (f === 'Rare') filtered = filtered.filter(c => gameMode === 'pokemon' ? isRare(c.rarity) : isDigimonRare(c.rarity));
     else if (f === 'Ultra') filtered = filtered.filter(c => (c.rarity||'').includes('Ultra'));
     else if (f === 'Secret') filtered = filtered.filter(c => (c.rarity||'').includes('Secret'));
+    else if (f === 'Super Rare') filtered = filtered.filter(c => (c.rarity||'') === 'Super Rare');
     else filtered = filtered.filter(c => (c.rarity||'') === f);
   }
   return filtered.reverse();
@@ -1062,11 +1474,28 @@ function showCollectionDetail(index) {
   document.getElementById('detailName').textContent = `${c.name} — ${c.supertype || ''}`;
   const types = (c.types || []).join(', ');
   document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types, `📦 ${c.set||''}`].filter(Boolean).join(' | ');
-  const pr = c.tcgplayer?.prices;
-  const keys = pr ? Object.keys(pr) : [];
-  document.getElementById('detailPrice').textContent = keys.length ? `💰 Market: $${(pr[keys[0]].market||0).toFixed(2)}` : '';
+  document.getElementById('detailPrice').textContent = '';
   document.getElementById('translationResult').textContent = '';
-  document.getElementById('pokeInfo').innerHTML = '';
+
+  if (gameMode === 'digimon' && c.color) {
+    document.getElementById('translateBtn').style.display = 'none';
+    const colorBadge = c.color ? `<span class="digi-badge digi-${c.color}">${c.color}</span>` : '';
+    document.getElementById('pokeInfo').innerHTML = `
+      <div class="digi-detail-box">
+        ${colorBadge ? `<div style="margin-bottom:6px">${colorBadge}</div>` : ''}
+        ${c.stage ? `<div class="digi-row"><span class="digi-label">Stage</span><span class="digi-value">${c.stage}</span></div>` : ''}
+        ${c.level ? `<div class="digi-row"><span class="digi-label">Level</span><span class="digi-value">${c.level}</span></div>` : ''}
+        ${c.dp ? `<div class="digi-row"><span class="digi-label">DP</span><span class="digi-value">${c.dp}</span></div>` : ''}
+        ${c.attribute ? `<div class="digi-row"><span class="digi-label">Attribute</span><span class="digi-value">${c.attribute}</span></div>` : ''}
+        ${c.digiType ? `<div class="digi-row"><span class="digi-label">Digi-Type</span><span class="digi-value">${c.digiType}</span></div>` : ''}
+        ${c.effect ? `<div class="digi-effect">📜 ${c.effect}</div>` : ''}
+        <div class="digi-row"><span class="digi-label">Set</span><span class="digi-value">${c.set||''}</span></div>
+      </div>`;
+  } else {
+    document.getElementById('translateBtn').style.display = 'inline-block';
+    document.getElementById('pokeInfo').innerHTML = '';
+  }
+
   document.getElementById('shareBtn').style.display = 'inline-block';
   document.getElementById('deleteBtn').style.display = 'inline-block';
 
