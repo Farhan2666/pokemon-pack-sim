@@ -341,9 +341,11 @@
     .poke-box .poke-head .pn { font-weight: 700; font-size: 0.9rem; }
     .poke-box .poke-head .pid { color: var(--muted); font-size: 0.7rem; }
     .type-badge {
-      display: inline-block; padding: 2px 10px; border-radius: 20px;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px 3px 6px; border-radius: 20px;
       font-size: 0.65rem; font-weight: 600; text-transform: uppercase; margin: 2px;
     }
+    .type-badge img { width: 14px; height: 14px; }
     .type-Grass { background: #78c850; color: #000; }
     .type-Fire { background: #f08030; color: #fff; }
     .type-Water { background: #6890f0; color: #fff; }
@@ -362,6 +364,8 @@
     .type-Rock { background: #b8a038; color: #000; }
     .type-Ghost { background: #705898; color: #fff; }
     .type-Ice { background: #98d8d8; color: #000; }
+
+    .type-icon-img { width: 14px; height: 14px; vertical-align: middle; }
 
     .poke-box .stat-grid {
       display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin-top: 8px;
@@ -471,14 +475,32 @@
 </div>
 
 <div class="app">
-  <header>
-    <h1>BREWEK POKÉMON KUY</h1>
-    <div class="sub">✨ Buka pack, kumpulin, pamerin ke temen-temen!</div>
-  </header>
+    <header>
+      <h1>
+        <svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256">
+          <circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/>
+          <path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/>
+          <circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/>
+          <circle cx="128" cy="128" r="16" fill="#333"/>
+        </svg>
+        BREWEK POKÉMON KUY
+      </h1>
+      <div class="sub">✨ Buka pack, kumpulin, pamerin ke temen-temen!</div>
+    </header>
 
   <nav>
-    <button class="active" onclick="showPage('home')" id="navHome">🔥 Buka Pack</button>
-    <button onclick="showPage('collection')" id="navCollection">📦 Koleksi <span class="nav-badge" id="collBadge">0</span></button>
+    <button class="active" onclick="showPage('home')" id="navHome">
+      <svg style="width:16px;height:16px;vertical-align:middle;margin-right:2px" viewBox="0 0 256 256">
+        <circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/>
+        <path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/>
+        <circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/>
+        <circle cx="128" cy="128" r="16" fill="#333"/>
+      </svg>
+      Buka Pack
+    </button>
+    <button onclick="showPage('collection')" id="navCollection">
+      📦 Koleksi <span class="nav-badge" id="collBadge">0</span>
+    </button>
   </nav>
 
   <!-- HOME PAGE -->
@@ -579,6 +601,7 @@ const FUNTRANS_API = 'https://api.funtranslations.com/translate';
 const JOKE_API = 'https://v2.jokeapi.dev/joke/Any?type=single&safe-mode';
 const TIMEOUT = 25000;
 const STORAGE_KEY = 'brewek_koleksi';
+const TYPE_ICONS = 'https://unpkg.com/@pokemonle/icons-svg@latest/icons';
 
 let allSets = [];
 let openedCards = [];
@@ -717,16 +740,21 @@ function renderSets(sets) {
     'HeartGold & SoulSilver': 'linear-gradient(135deg,#fbbf24,#b45309)',
     'Diamond & Pearl': 'linear-gradient(135deg,#6366f1,#818cf8)',
   };
-  grid.innerHTML = sets.map(s => `
+  const TYPE_ICON = (t) => `https://unpkg.com/@pokemonle/icons-svg@latest/icons/${t}.svg`;
+  grid.innerHTML = sets.map(s => {
+    const badgeColors = { 'Mega Evolution':'#7c3aed','Sun & Moon':'#f59e0b','Sword & Shield':'#3b82f6','Scarlet & Violet':'#ef4444','Black & White':'#374151','XY':'#8b5cf6','HeartGold & SoulSilver':'#fbbf24','Diamond & Pearl':'#6366f1' };
+    const c = badgeColors[s.series] || '#475569';
+    return `
     <div class="pack-card" onclick="openPack('${s.id}')">
       <div class="pack-img" style="background:${colors[s.series]||'linear-gradient(135deg,#1e293b,#475569)'}">
-        ${s.images?.logo ? `<img src="${s.images.logo}" alt="${s.name}" style="width:80%;height:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">` : '📦'}
+        ${s.images?.logo ? `<img src="${s.images.logo}" alt="${s.name}" style="width:80%;height:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">` :
+        `<svg width="40" height="40" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="rgba(255,255,255,0.3)" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="${c}"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="rgba(255,255,255,0.3)" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="rgba(255,255,255,0.3)"/></svg>`}
       </div>
       <div class="pack-name">${s.name}</div>
       <div class="pack-series">${s.series}</div>
       <div class="pack-total">${s.printedTotal} kartu</div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 // ======== UPDATE STATS ========
@@ -893,7 +921,7 @@ async function showDetail(index) {
     const sp = await fetchJSON(`${POKE_API}/pokemon-species/${pd.id}`, 7000);
 
     const typesHtml = pd.types.map(t =>
-      `<span class="type-badge type-${t.type.name.charAt(0).toUpperCase()+t.type.name.slice(1)}">${t.type.name}</span>`
+      `<span class="type-badge type-${t.type.name.charAt(0).toUpperCase()+t.type.name.slice(1)}"><img class="type-icon-img" src="${TYPE_ICONS}/${t.type.name}.svg" alt="">${t.type.name}</span>`
     ).join('');
 
     const stats = {};
