@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>brewek Pokémon kuy</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/25.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
   <style>
@@ -380,6 +382,15 @@
     .poke-box .evo-row .evo-item span { font-size: 0.65rem; color: var(--muted); }
     .poke-box .evo-row .evo-arrow { color: var(--muted); font-size: 1rem; }
 
+    .btn-sm {
+      padding: 6px 14px; border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; background: transparent;
+      color: var(--muted); font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s; font-family: inherit;
+    }
+    .btn-sm:hover { border-color: var(--pika); color: var(--pika); }
+    .btn-del:hover { border-color: #ef4444 !important; color: #ef4444 !important; }
+    .btn-share:hover { border-color: #3b82f6 !important; color: #3b82f6 !important; }
     .detail-card .translate-btn {
       margin-top: 6px; padding: 5px 14px;
       border: 1px solid rgba(255,255,255,0.1);
@@ -389,6 +400,15 @@
     }
     .detail-card .translate-btn:hover { border-color: #a78bfa; color: #a78bfa; }
     .translation-result { margin-top: 4px; font-size: 0.8rem; color: #a78bfa; font-style: italic; min-height: 1.2em; }
+
+    .clear-all-btn {
+      padding: 8px 18px; border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px; background: rgba(239,68,68,0.06);
+      color: #ef4444; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s; font-family: inherit;
+      margin-left: auto;
+    }
+    .clear-all-btn:hover { background: rgba(239,68,68,0.12); }
 
     /* ---- Collection Page ---- */
     .coll-header {
@@ -499,6 +519,7 @@
         <option value="Common">Common</option>
         <option value="Uncommon">Uncommon</option>
       </select>
+      <button class="clear-all-btn" onclick="clearAll()">🗑 Hapus Semua</button>
     </div>
     <div class="cards-grid" id="collGrid"></div>
     <div class="coll-empty" id="collEmpty" style="display:none">
@@ -540,7 +561,11 @@
     <button class="translate-btn" id="translateBtn" onclick="translateCard()">🌐 Yoda-speak</button>
     <div class="translation-result" id="translationResult"></div>
     <br>
-    <button class="close-btn" onclick="document.getElementById('detailOverlay').classList.remove('active')" style="margin-top:6px">Tutup</button>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px">
+      <button class="btn-sm btn-share" id="shareBtn" onclick="shareCard()">📤 Bagikan</button>
+      <button class="btn-sm btn-del" id="deleteBtn" onclick="deleteCard()">🗑️ Hapus</button>
+      <button class="btn-sm" onclick="document.getElementById('detailOverlay').classList.remove('active')">Tutup</button>
+    </div>
   </div>
 </div>
 
@@ -980,28 +1005,7 @@ function renderCollection() {
   });
 }
 
-function showCollectionDetail(index) {
-  loadCollection();
-  const filtered = getFilteredCollection();
-  const c = filtered[index];
-  if (!c) return;
-  const ov = document.getElementById('detailOverlay');
-
-  document.getElementById('detailImg').src = c.imageLarge || c.image || '';
-  document.getElementById('detailName').textContent = `${c.name} — ${c.supertype || ''}`;
-  const types = (c.types || []).join(', ');
-  document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types, `📦 ${c.set||''}`].filter(Boolean).join(' | ');
-  const pr = c.tcgplayer?.prices;
-  const keys = pr ? Object.keys(pr) : [];
-  document.getElementById('detailPrice').textContent = keys.length ? `💰 Market: $${(pr[keys[0]].market||0).toFixed(2)}` : '';
-  document.getElementById('translationResult').textContent = '';
-  document.getElementById('pokeInfo').innerHTML = '';
-
-  currentPokeName = c.name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\s+/g, '-');
-  ov.classList.add('active');
-}
-
-function getFilteredCollection() {
+ function getFilteredCollection() {
   const q = document.getElementById('collSearch').value.toLowerCase();
   const f = document.getElementById('collFilter').value;
   let filtered = [...collection];
@@ -1013,6 +1017,78 @@ function getFilteredCollection() {
     else filtered = filtered.filter(c => (c.rarity||'') === f);
   }
   return filtered.reverse();
+}
+
+// ======== DELETE CARD ========
+let deleteTargetIndex = -1;
+
+function showCollectionDetail(index) {
+  loadCollection();
+  const filtered = getFilteredCollection();
+  const c = filtered[index];
+  if (!c) return;
+  deleteTargetIndex = index;
+  const ov = document.getElementById('detailOverlay');
+
+  document.getElementById('detailImg').src = c.imageLarge || c.image || '';
+  document.getElementById('detailName').textContent = `${c.name} — ${c.supertype || ''}`;
+  const types = (c.types || []).join(', ');
+  document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types, `📦 ${c.set||''}`].filter(Boolean).join(' | ');
+  const pr = c.tcgplayer?.prices;
+  const keys = pr ? Object.keys(pr) : [];
+  document.getElementById('detailPrice').textContent = keys.length ? `💰 Market: $${(pr[keys[0]].market||0).toFixed(2)}` : '';
+  document.getElementById('translationResult').textContent = '';
+  document.getElementById('pokeInfo').innerHTML = '';
+  document.getElementById('shareBtn').style.display = 'inline-block';
+  document.getElementById('deleteBtn').style.display = 'inline-block';
+
+  currentPokeName = c.name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\s+/g, '-');
+  ov.classList.add('active');
+}
+
+function deleteCard() {
+  loadCollection();
+  const filtered = getFilteredCollection();
+  if (deleteTargetIndex < 0 || deleteTargetIndex >= filtered.length) return;
+  const target = filtered[deleteTargetIndex];
+  const idx = collection.findIndex(c => c.id === target.id && c.openedAt === target.openedAt);
+  if (idx > -1) {
+    collection.splice(idx, 1);
+    saveCollection();
+    updateStats();
+    renderCollection();
+  }
+  document.getElementById('detailOverlay').classList.remove('active');
+  fireConfetti();
+}
+
+function clearAll() {
+  if (collection.length === 0) return;
+  if (!confirm('Hapus SEMUA koleksi? Data gak bisa dikembalikan!')) return;
+  collection = [];
+  saveCollection();
+  updateStats();
+  renderCollection();
+  fireConfetti();
+}
+
+// ======== SHARE ========
+function shareCard() {
+  const name = document.getElementById('detailName')?.textContent?.split('—')[0]?.trim();
+  const rarity = document.getElementById('detailSub')?.textContent?.split('|')[0]?.trim();
+  const img = document.getElementById('detailImg')?.src;
+  if (!name) return;
+  const text = `🔥 BREWEK POKÉMON KUY!\nDapet ${name} (${rarity || 'Common'})!\nBuka pack juga di: https://pokemon-pack-sim-one.vercel.app`;
+  if (navigator.share) {
+    navigator.share({ title: 'brewek Pokémon kuy', text, url: 'https://pokemon-pack-sim-one.vercel.app' }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(text).then(() => {
+      const t = document.getElementById('jokeToast');
+      t.textContent = '📋 Teks berhasil disalin!';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }).catch(() => {});
+  }
 }
 
 init();
