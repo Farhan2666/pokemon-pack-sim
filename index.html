@@ -554,6 +554,8 @@
     /* ---- Icon helpers ---- */
     .mode-icon { width: 16px; height: 16px; vertical-align: middle; margin-right: 2px; }
     .gi { vertical-align: middle; }
+    .gi-white { filter: brightness(0) invert(1); }
+    img[src*="fox-head"] { filter: brightness(0) invert(1); }
     .ic-inline { width: 14px; height: 14px; vertical-align: middle; }
     .ic-sm { width: 12px; height: 12px; vertical-align: middle; }
     .ic-lg { width: 18px; height: 18px; vertical-align: middle; }
@@ -715,7 +717,10 @@ function gi(icon, size = 16) {
   return `<img class="gi" src="https://api.iconify.design/game-icons/${icon}.svg?height=${size}" style="width:${size}px;height:${size}px" alt="">`;
 }
 function digiError(el) {
-  el.parentElement.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);font-size:2rem;text-align:center;padding:10px;word-break:break-word"><img src="https://api.iconify.design/game-icons/card-random.svg?height=32" style="width:32px;height:32px;display:block;margin:0 auto"><br>' + (el.alt || 'Digimon') + '</div>';
+  const d = document.createElement('div');
+  d.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);font-size:1.5rem;text-align:center;padding:10px;word-break:break-word;flex-direction:column';
+  d.innerHTML = '<img src="https://api.iconify.design/game-icons/card-random.svg?height=32" style="width:32px;height:32px;display:block;margin:0 auto 4px" alt=""><span>' + (el.alt || 'Digimon') + '</span>';
+  el.replaceWith(d);
 }
 
 // ======== HELPERS ========
@@ -1254,9 +1259,19 @@ function showDigimonDetail(index) {
   if (!c) return;
   const ov = document.getElementById('detailOverlay');
 
+  const fb = document.getElementById('detailImgFallback');
+  if (fb) fb.remove();
   document.getElementById('detailImg').src = `${DIGIMON_IMG}/${c.id}`;
   document.getElementById('detailImg').onerror = function() {
     this.style.display = 'none';
+    let fb = document.getElementById('detailImgFallback');
+    if (!fb) {
+      fb = document.createElement('div');
+      fb.id = 'detailImgFallback';
+      fb.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:200px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:12px;font-size:1.5rem;text-align:center;padding:20px;flex-direction:column;margin-bottom:12px';
+      this.parentElement.insertBefore(fb, this.nextSibling);
+    }
+    fb.innerHTML = '<img src="https://api.iconify.design/game-icons/card-random.svg?height=48" style="width:48px;height:48px;display:block;margin:0 auto 8px" alt=""><span>' + (c?.name || 'Digimon') + '</span>';
   };
   document.getElementById('detailName').textContent = `${c.name} — ${c.type || 'Digimon'}`;
   document.getElementById('detailSub').textContent = [c.rarity, c.color, c.stage, c.level ? `Lv.${c.level}` : '', c.dp ? `DP ${c.dp}` : ''].filter(Boolean).join(' | ');
@@ -1441,7 +1456,7 @@ function renderCollection() {
     const isRareFn = gameMode === 'digimon' ? isDigimonRare : isRare;
     const rare = isRareFn(c.rarity);
     return `<div class="card-item rar-${r}" style="transition-delay:${Math.min(i,20)*0.03}s" onclick="showCollectionDetail(${i})">
-      <img src="${c.image||''}" alt="${c.name}" loading="lazy">
+      <img src="${c.image||''}" alt="${c.name}" loading="lazy" onerror="digiError(this)">
       <div class="rarity-badge">${rare?'<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" style="margin-right:2px" alt="">':''}${c.rarity||'Common'}</div>
       <div class="card-info">${c.name}${rare?' <img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt="">':''} · ${c.set||''}</div>
     </div>`;
@@ -1477,7 +1492,22 @@ function showCollectionDetail(index) {
   deleteTargetIndex = index;
   const ov = document.getElementById('detailOverlay');
 
-  document.getElementById('detailImg').src = c.imageLarge || c.image || '';
+  const fb = document.getElementById('detailImgFallback');
+  if (fb) fb.remove();
+  const img = document.getElementById('detailImg');
+  img.src = c.imageLarge || c.image || '';
+  img.style.display = '';
+  img.onerror = function() {
+    this.style.display = 'none';
+    let fb = document.getElementById('detailImgFallback');
+    if (!fb) {
+      fb = document.createElement('div');
+      fb.id = 'detailImgFallback';
+      fb.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:200px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:12px;font-size:1.5rem;text-align:center;padding:20px;flex-direction:column;margin-bottom:12px';
+      this.parentElement.insertBefore(fb, this.nextSibling);
+    }
+    fb.innerHTML = '<img src="https://api.iconify.design/game-icons/card-random.svg?height=48" style="width:48px;height:48px;display:block;margin:0 auto 8px" alt=""><span>' + (this.alt || c.name || 'Digimon') + '</span>';
+  };
   document.getElementById('detailName').textContent = `${c.name} — ${c.supertype || ''}`;
   const types = (c.types || []).join(', ');
   document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types, c.set||''].filter(Boolean).join(' | ');
