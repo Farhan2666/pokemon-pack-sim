@@ -6,1599 +6,369 @@
   <title>brewek Pokémon kuy</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/25.png">
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
-    <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --pika: #ffcb05; --pika-dark: #e6b800; --bg: #0f0f23; --card-bg: #1a1a3e; --text: #f1f5f9; --muted: #64748b; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-      background-image:
-        radial-gradient(circle at 20% 50%, rgba(255,203,5,0.06) 0%, transparent 50%),
-        radial-gradient(circle at 80% 50%, rgba(59,130,246,0.06) 0%, transparent 50%),
-        repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(255,255,255,0.01) 80px, rgba(255,255,255,0.01) 81px);
-    }
-
-    /* ---- Pokéball bg ---- */
-    .bg-balls {
-      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
-    }
-    .bg-balls span {
-      position: absolute; border-radius: 50%;
-      width: 120px; height: 120px;
-      background: radial-gradient(circle at 35% 35%, rgba(239,68,68,0.06), transparent 70%);
-      border: 1px solid rgba(239,68,68,0.04);
-    }
-    .bg-balls span:nth-child(1) { top: 10%; left: 5%; width: 180px; height: 180px; }
-    .bg-balls span:nth-child(2) { top: 60%; right: 8%; width: 140px; height: 140px; }
-    .bg-balls span:nth-child(3) { top: 30%; right: 30%; width: 100px; height: 100px; background: radial-gradient(circle at 35% 35%, rgba(255,203,5,0.06), transparent 70%); border-color: rgba(255,203,5,0.04); }
-    .bg-balls span:nth-child(4) { bottom: 15%; left: 20%; width: 160px; height: 160px; }
-    .bg-balls span:nth-child(5) { top: 5%; right: 15%; width: 80px; height: 80px; }
-
-    .app { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; }
-
-    /* ---- Header ---- */
-    header {
-      text-align: center; padding: 24px 0 16px;
-      position: relative;
-    }
-    header h1 {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 1.1rem;
-      background: linear-gradient(135deg, #ffcb05, #ff6b35, #ffcb05);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: 1px;
-      line-height: 1.6;
-    }
-    header .sub {
-      font-size: 0.75rem; color: var(--muted); margin-top: 6px;
-    }
-
-    /* ---- Nav ---- */
-    nav {
-      display: flex; gap: 4px; justify-content: center; margin: 16px 0 20px;
-      background: rgba(255,255,255,0.04); border-radius: 14px; padding: 4px;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    nav button {
-      flex: 1; max-width: 160px;
-      padding: 10px 16px; border: none; border-radius: 11px;
-      background: transparent; color: var(--muted); font-weight: 600; font-size: 0.8rem;
-      cursor: pointer; transition: all 0.3s; font-family: inherit;
-    }
-    nav button.active {
-      background: rgba(255,203,5,0.12); color: var(--pika);
-    }
-    nav button:hover:not(.active) { color: var(--text); }
-    .nav-badge {
-      display: inline-block; margin-left: 4px;
-      background: rgba(255,203,5,0.15); color: var(--pika);
-      font-size: 0.65rem; padding: 1px 7px; border-radius: 20px; font-weight: 700;
-    }
-    nav button.active .nav-badge { background: var(--pika); color: #000; }
-
-    /* ---- Pages ---- */
-    .page { display: none; }
-    .page.active { display: block; }
-
-    /* ---- Sets Grid ---- */
-    .sets-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 12px; margin-bottom: 20px;
-    }
-    .pack-card {
-      background: linear-gradient(145deg, #1a1a3e, #16213e);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 14px; padding: 18px 14px; text-align: center;
-      cursor: pointer; transition: all 0.3s ease;
-    }
-    .pack-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--pika);
-      box-shadow: 0 12px 30px rgba(255,203,5,0.12);
-    }
-    .pack-card .pack-img {
-      width: 90px; height: 126px; margin: 0 auto 10px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem; transition: transform 0.3s;
-    }
-    .pack-card:hover .pack-img { transform: scale(1.06); }
-    .pack-card .pack-name { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; }
-    .pack-card .pack-series { font-size: 0.7rem; color: var(--muted); }
-    .pack-card .pack-total { font-size: 0.7rem; color: var(--muted); margin-top: 6px; }
-
-    /* ---- Stats Bar ---- */
-    .stats-bar {
-      display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-    .stat-chip {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px; padding: 10px 16px;
-      text-align: center; min-width: 80px;
-    }
-    .stat-chip .num { font-size: 1.2rem; font-weight: 800; }
-    .stat-chip .lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
-
-    /* ---- Section Title ---- */
-    .section-title {
-      font-size: 0.9rem; font-weight: 700; margin-bottom: 12px;
-      color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-
-    /* ---- Loading ---- */
-    .pika-loading {
-      text-align: center; padding: 60px 20px; color: var(--muted);
-    }
-    .pika-track {
-      position: relative; height: 80px; margin: 0 auto 16px; max-width: 300px;
-      overflow: hidden;
-    }
-    .pika-track .road {
-      position: absolute; bottom: 10px; left: 0; right: 0;
-      height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px;
-    }
-    .pika-track .road::after {
-      content: ''; position: absolute; top: -6px; left: 0; right: 0;
-      height: 14px;
-      background: repeating-linear-gradient(90deg, transparent, transparent 16px, rgba(255,255,255,0.05) 16px, rgba(255,255,255,0.05) 18px);
-    }
-    .pika-track img {
-      position: absolute; bottom: 14px; height: 50px;
-      animation: pikaRun 1.2s ease-in-out infinite alternate;
-    }
-    @keyframes pikaRun {
-      0% { transform: translateX(-20px) scaleX(1); }
-      48% { transform: translateX(calc(100% + 20px)) scaleX(1); }
-      50% { transform: translateX(calc(100% + 20px)) scaleX(-1); }
-      98% { transform: translateX(-20px) scaleX(-1); }
-      100% { transform: translateX(-20px) scaleX(1); }
-    }
-    .pika-text { font-size: 0.85rem; font-weight: 600; color: var(--pika); }
-    .pika-sub { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
-
-    /* ---- Pack Opening Overlay ---- */
-    .pack-overlay {
-      position: fixed; inset: 0; z-index: 100;
-      background: rgba(5,5,20,0.92);
-      backdrop-filter: blur(12px);
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 20px;
-    }
-    .pack-overlay.active { display: flex; }
-
-    .tear-container {
-      text-align: center; display: flex; flex-direction: column;
-      align-items: center; gap: 20px;
-    }
-    .tear-pack {
-      width: 170px; height: 238px;
-      background: linear-gradient(145deg, #f59e0b, #d97706);
-      border-radius: 12px;
-      position: relative;
-      animation: packShake 0.5s ease-in-out infinite alternate;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.8rem;
-      box-shadow: 0 20px 60px rgba(245,158,11,0.3);
-      overflow: hidden; cursor: pointer;
-    }
-    .tear-pack::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
-      animation: tearGlow 0.7s ease-in-out infinite;
-    }
-    @keyframes packShake {
-      0% { transform: rotate(-2deg) scale(1); }
-      100% { transform: rotate(2deg) scale(1.02); }
-    }
-    @keyframes tearGlow {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-    .tear-pack .click-hint {
-      position: absolute; bottom: -36px; left: 50%; transform: translateX(-50%);
-      font-size: 0.7rem; color: var(--pika); white-space: nowrap;
-      animation: bounce 1s ease-in-out infinite;
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(-4px); }
-    }
-    .tear-text {
-      font-size: 1rem; font-weight: 600; color: var(--pika);
-      animation: pulse 1.2s ease-in-out infinite;
-      min-height: 1.5em;
-    }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-    .tear-flash {
-      animation: flashOut 0.5s ease-out forwards;
-    }
-    @keyframes flashOut {
-      0% { transform: scale(1); opacity: 1; }
-      40% { transform: scale(1.2); opacity: 0.6; filter: brightness(3); }
-      100% { transform: scale(0); opacity: 0; }
-    }
-    .tear-container .loading-bar-wrap {
-      width: 200px; height: 3px; background: rgba(255,255,255,0.08);
-      border-radius: 2px; overflow: hidden;
-    }
-    .tear-container .loading-bar {
-      height: 100%; width: 0; border-radius: 2px;
-      background: linear-gradient(90deg, var(--pika), #ff6b35);
-      transition: width 0.3s ease;
-    }
-
-    /* Cards reveal in overlay */
-    .cards-reveal {
-      display: none; flex-direction: column; align-items: center;
-      width: 100%; max-width: 900px;
-    }
-    .cards-reveal.active { display: flex; }
-    .cards-reveal .reveal-header {
-      text-align: center; margin-bottom: 16px; width: 100%;
-    }
-    .cards-reveal .reveal-header h2 { font-size: 1.1rem; color: var(--pika); }
-    .cards-reveal .reveal-header .set-info { font-size: 0.75rem; color: var(--muted); }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 10px; width: 100%; perspective: 1000px;
-    }
-    .card-item {
-      aspect-ratio: 2.5/3.5;
-      border-radius: 8px; overflow: hidden; position: relative;
-      opacity: 0; transform: rotateY(180deg) scale(0.5);
-      transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-      cursor: pointer;
-    }
-    .card-item.revealed { opacity: 1; transform: rotateY(0deg) scale(1); }
-    .card-item img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
-    }
-    .card-item .card-info {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 5px 6px;
-      background: linear-gradient(transparent, rgba(0,0,0,0.85));
-      color: #fff; font-size: 0.65rem; font-weight: 600;
-      opacity: 0; transition: opacity 0.3s;
-    }
-    .card-item:hover .card-info { opacity: 1; }
-    .card-item .rarity-badge {
-      position: absolute; top: 4px; right: 4px;
-      font-size: 0.6rem; padding: 2px 5px; border-radius: 4px;
-      background: rgba(0,0,0,0.7);
-    }
-    .card-item.rar-Common { border: 2px solid #64748b; }
-    .card-item.rar-Uncommon { border: 2px solid #22c55e; }
-    .card-item.rar-Rare { border: 2px solid #3b82f6; }
-    .card-item[class*="rar-Rare"], .card-item[class*="rar-Ultra"],
-    .card-item[class*="rar-Secret"], .card-item[class*="rar-Shiny"],
-    .card-item[class*="rar-Double"], .card-item[class*="rar-Amazing"],
-    .card-item[class*="rar-illustration"], .card-item[class*="rar-Holo"] { border: 2px solid #f59e0b; }
-
-    .card-item.rare-pulse {
-      animation: rareGlow 1.5s ease-in-out 2;
-    }
-    @keyframes rareGlow {
-      0%,100% { box-shadow: 0 0 5px rgba(245,158,11,0.2); }
-      50% { box-shadow: 0 0 20px rgba(245,158,11,0.7), 0 0 40px rgba(245,158,11,0.2); }
-    }
-
-    .close-btn {
-      margin-top: 18px; padding: 10px 28px;
-      border: 2px solid rgba(255,255,255,0.12);
-      border-radius: 12px; background: rgba(255,255,255,0.04);
-      color: #fff; font-size: 0.85rem; font-weight: 600;
-      cursor: pointer; transition: all 0.3s; font-family: inherit;
-    }
-    .close-btn:hover { border-color: var(--pika); color: var(--pika); background: rgba(255,203,5,0.08); }
-
-    /* ---- Card Detail Modal ---- */
-    .detail-overlay {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(5,5,20,0.93); backdrop-filter: blur(16px);
-      display: none; align-items: center; justify-content: center;
-      padding: 20px; overflow-y: auto;
-    }
-    .detail-overlay.active { display: flex; }
-    .detail-card {
-      max-width: 480px; width: 100%; text-align: center;
-      max-height: 90vh; overflow-y: auto;
-    }
-    .detail-card .main-img {
-      width: 100%; max-width: 260px; border-radius: 12px;
-      margin-bottom: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    }
-    .detail-card h3 { font-size: 1.15rem; }
-    .detail-card .sub-info { color: var(--muted); font-size: 0.75rem; margin-bottom: 6px; }
-    .detail-card .price-tag {
-      padding: 5px 12px; background: rgba(255,203,5,0.08);
-      border: 1px solid rgba(255,203,5,0.15);
-      border-radius: 8px; display: inline-block; font-size: 0.8rem;
-      color: #fbbf24; margin-bottom: 10px;
-    }
-    .detail-card .poke-box {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px; padding: 14px;
-      margin-top: 10px; text-align: left;
-    }
-    .poke-box .poke-head {
-      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
-    }
-    .poke-box .poke-head img { width: 44px; height: 44px; image-rendering: pixelated; }
-    .poke-box .poke-head .pn { font-weight: 700; font-size: 0.9rem; }
-    .poke-box .poke-head .pid { color: var(--muted); font-size: 0.7rem; }
-    .type-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 3px 10px 3px 6px; border-radius: 20px;
-      font-size: 0.65rem; font-weight: 600; text-transform: uppercase; margin: 2px;
-    }
-    .type-badge img { width: 14px; height: 14px; }
-    .type-Grass { background: #78c850; color: #000; }
-    .type-Fire { background: #f08030; color: #fff; }
-    .type-Water { background: #6890f0; color: #fff; }
-    .type-Lightning, .type-Electric { background: #f8d030; color: #000; }
-    .type-Psychic { background: #f85888; color: #fff; }
-    .type-Fighting { background: #c03028; color: #fff; }
-    .type-Darkness, .type-Dark { background: #705848; color: #fff; }
-    .type-Metal, .type-Steel { background: #b8b8d0; color: #000; }
-    .type-Fairy { background: #ee99ac; color: #000; }
-    .type-Dragon { background: #7038f8; color: #fff; }
-    .type-Colorless, .type-Normal { background: #a8a878; color: #000; }
-    .type-Ground { background: #e0c068; color: #000; }
-    .type-Poison { background: #a040a0; color: #fff; }
-    .type-Flying { background: #a890f0; color: #000; }
-    .type-Bug { background: #a8b820; color: #000; }
-    .type-Rock { background: #b8a038; color: #000; }
-    .type-Ghost { background: #705898; color: #fff; }
-    .type-Ice { background: #98d8d8; color: #000; }
-
-    .type-icon-img { width: 14px; height: 14px; vertical-align: middle; }
-
-    .poke-box .stat-grid {
-      display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin-top: 8px;
-    }
-    .poke-box .stat-grid .s-item { text-align: center; }
-    .poke-box .stat-grid .s-val { font-size: 0.9rem; font-weight: 700; }
-    .poke-box .stat-grid .s-lbl { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; }
-
-    .poke-box .evo-row {
-      display: flex; align-items: center; gap: 6px; margin-top: 8px;
-      justify-content: center; flex-wrap: wrap;
-    }
-    .poke-box .evo-row .evo-item {
-      display: flex; flex-direction: column; align-items: center;
-      cursor: default;
-    }
-    .poke-box .evo-row .evo-item img { width: 32px; height: 32px; image-rendering: pixelated; }
-    .poke-box .evo-row .evo-item span { font-size: 0.65rem; color: var(--muted); }
-    .poke-box .evo-row .evo-arrow { color: var(--muted); font-size: 1rem; }
-
-    .btn-sm {
-      padding: 6px 14px; border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 8px; background: transparent;
-      color: var(--muted); font-size: 0.75rem; font-weight: 600;
-      cursor: pointer; transition: all 0.3s; font-family: inherit;
-    }
-    .btn-sm:hover { border-color: var(--pika); color: var(--pika); }
-    .btn-del:hover { border-color: #ef4444 !important; color: #ef4444 !important; }
-    .btn-share:hover { border-color: #3b82f6 !important; color: #3b82f6 !important; }
-    .detail-card .translate-btn {
-      margin-top: 6px; padding: 5px 14px;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px; background: transparent;
-      color: var(--muted); font-size: 0.75rem; cursor: pointer;
-      transition: all 0.3s; font-family: inherit;
-    }
-    .detail-card .translate-btn:hover { border-color: #a78bfa; color: #a78bfa; }
-    .translation-result { margin-top: 4px; font-size: 0.8rem; color: #a78bfa; font-style: italic; min-height: 1.2em; }
-
-    .clear-all-btn {
-      padding: 8px 18px; border: 1px solid rgba(239,68,68,0.3);
-      border-radius: 10px; background: rgba(239,68,68,0.06);
-      color: #ef4444; font-size: 0.75rem; font-weight: 600;
-      cursor: pointer; transition: all 0.3s; font-family: inherit;
-      margin-left: auto;
-    }
-    .clear-all-btn:hover { background: rgba(239,68,68,0.12); }
-
-    /* ---- Collection Page ---- */
-    .coll-header {
-      display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap;
-    }
-    .coll-header input {
-      flex: 1; min-width: 140px;
-      padding: 8px 14px; border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px; background: rgba(255,255,255,0.04);
-      color: #fff; font-size: 0.8rem; font-family: inherit;
-      outline: none; transition: border 0.3s;
-    }
-    .coll-header input:focus { border-color: var(--pika); }
-    .coll-header input::placeholder { color: var(--muted); }
-    .coll-header select {
-      padding: 8px 10px; border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px; background: rgba(255,255,255,0.04);
-      color: var(--text); font-size: 0.75rem; font-family: inherit;
-      outline: none; cursor: pointer;
-    }
-    .coll-empty {
-      text-align: center; padding: 60px 20px; color: var(--muted);
-    }
-    .coll-empty .big { font-size: 3rem; margin-bottom: 12px; }
-    .coll-empty p { font-size: 0.9rem; margin-bottom: 4px; }
-    .coll-empty .sub { font-size: 0.75rem; }
-
-    /* ---- Joke Toast ---- */
-    .joke-toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-      z-index: 150;
-      background: rgba(30,41,59,0.95); backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px; padding: 12px 20px;
-      max-width: 380px; text-align: center; font-size: 0.8rem;
-      color: #cbd5e1;
-      opacity: 0; transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-      pointer-events: none;
-    }
-    .joke-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    /* ---- Responsive ---- */
-    @media (max-width: 600px) {
-      header h1 { font-size: 0.8rem; }
-      .sets-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
-      .tear-pack { width: 140px; height: 196px; font-size: 2rem; }
-      .cards-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-      .pack-card .pack-img { width: 70px; height: 98px; }
-      .stats-bar { gap: 6px; }
-      .stat-chip { padding: 8px 10px; min-width: 60px; }
-      .stat-chip .num { font-size: 1rem; }
-      .poke-box .stat-grid { grid-template-columns: repeat(3,1fr); }
-      nav button { font-size: 0.7rem; padding: 8px 10px; }
-    }
-
-    /* ---- Mode Tabs ---- */
-    .mode-tabs {
-      display: flex; gap: 4px; justify-content: center; margin: 4px 0 10px;
-    }
-    .mode-tabs button {
-      padding: 6px 20px; border: none; border-radius: 8px;
-      background: transparent; color: var(--muted); font-weight: 700; font-size: 0.75rem;
-      cursor: pointer; transition: all 0.3s; font-family: inherit;
-      border: 1px solid transparent;
-    }
-    .mode-tabs button.active-pkm {
-      background: rgba(255,203,5,0.15); color: var(--pika); border-color: rgba(255,203,5,0.25);
-    }
-    .mode-tabs button.active-dgm {
-      background: rgba(168,85,247,0.15); color: #a855f7; border-color: rgba(168,85,247,0.25);
-    }
-    .mode-tabs button:hover:not(.active-pkm):not(.active-dgm) { color: var(--text); }
-
-    /* ---- Digimon Theme ---- */
-    body.mode-digimon { --pika: #a855f7; --pika-dark: #9333ea; --bg: #0a0a1a; --card-bg: #18182e; }
-    body.mode-digimon .bg-balls span { background: radial-gradient(circle at 35% 35%, rgba(168,85,247,0.06), transparent 70%); border-color: rgba(168,85,247,0.04); }
-    body.mode-digimon h1 { background: linear-gradient(135deg, #a855f7, #ec4899, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    body.mode-digimon nav button.active { background: rgba(168,85,247,0.12); color: #a855f7; }
-    body.mode-digimon .nav-badge { background: rgba(168,85,247,0.15); color: #a855f7; }
-    body.mode-digimon nav button.active .nav-badge { background: #a855f7; color: #fff; }
-    body.mode-digimon .pack-card:hover { border-color: #a855f7; box-shadow: 0 12px 30px rgba(168,85,247,0.12); }
-    body.mode-digimon .pack-card:hover .pack-img { transform: scale(1.06); }
-
-    /* ---- Digimon Color Badges ---- */
-    .digi-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 2px 8px; border-radius: 12px;
-      font-size: 0.65rem; font-weight: 600; text-transform: uppercase; margin: 2px;
-    }
-    .digi-Red { background: #e74c3c; color: #fff; }
-    .digi-Blue { background: #3498db; color: #fff; }
-    .digi-Yellow { background: #f1c40f; color: #000; }
-    .digi-Green { background: #2ecc71; color: #000; }
-    .digi-Purple { background: #9b59b6; color: #fff; }
-    .digi-Black { background: #2c3e50; color: #fff; }
-    .digi-White { background: #ecf0f1; color: #000; }
-    .digi-Colorless { background: #95a5a6; color: #000; }
-    .digi-Pink { background: #fd79a8; color: #000; }
-
-    .digi-detail-box {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px; padding: 14px;
-      margin-top: 10px; text-align: left;
-    }
-    .digi-detail-box .digi-row {
-      display: flex; justify-content: space-between; padding: 3px 0;
-      font-size: 0.78rem; border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .digi-detail-box .digi-row:last-child { border-bottom: none; }
-    .digi-detail-box .digi-label { color: var(--muted); }
-    .digi-detail-box .digi-value { font-weight: 600; }
-    .digi-detail-box .digi-effect {
-      margin-top: 8px; font-size: 0.75rem; color: #cbd5e1;
-      background: rgba(255,255,255,0.03); border-radius: 8px; padding: 8px;
-    }
-
-    /* ---- Digimon Loading ---- */
-    .digi-loading .digi-track {
-      position: relative; height: 80px; margin: 0 auto 16px; max-width: 300px; overflow: hidden;
-    }
-    .digi-loading .digi-track .road {
-      position: absolute; bottom: 10px; left: 0; right: 0;
-      height: 3px; background: rgba(168,85,247,0.1); border-radius: 2px;
-    }
-    .digi-loading .digi-track .digi-runner {
-      position: absolute; bottom: 0;
-      font-size: 2.5rem;
-      animation: digiRun 1.5s ease-in-out infinite alternate;
-    }
-    @keyframes digiRun {
-      0% { transform: translateX(-20px) scaleX(1); }
-      48% { transform: translateX(260px) scaleX(1); }
-      50% { transform: translateX(260px) scaleX(-1); }
-      98% { transform: translateX(-20px) scaleX(-1); }
-      100% { transform: translateX(-20px) scaleX(1); }
-    }
-
-    /* ---- Icon helpers ---- */
-    .mode-icon { width: 16px; height: 16px; vertical-align: middle; margin-right: 2px; }
-    .gi { vertical-align: middle; }
-    .gi-white { filter: brightness(0) invert(1); }
-    img[src*="fox-head"] { filter: brightness(0) invert(1); }
-    .ic-inline { width: 14px; height: 14px; vertical-align: middle; }
-    .ic-sm { width: 12px; height: 12px; vertical-align: middle; }
-    .ic-lg { width: 18px; height: 18px; vertical-align: middle; }
-    .ic-xl { width: 40px; height: 40px; vertical-align: middle; }
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--pika:#ffcb05;--pika-dark:#e6b800;--bg:#0a0a1a;--card-bg:#1a1a3e;--text:#f1f5f9;--muted:#84748b;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.08);--glass-hover:rgba(255,255,255,0.08);--accent:#ffcb05;--accent-glow:rgba(255,203,5,0.3);--danger:#ef4444;--success:#22c55e;--info:#3b82f6;--radius:16px;--radius-sm:10px}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .5s,color .3s}
+    #particleCanvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+    .bg-gradient{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 20%,rgba(255,203,5,.05) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(59,130,246,.05) 0%,transparent 50%),radial-gradient(ellipse at 50% 50%,rgba(168,85,247,.03) 0%,transparent 60%)}
+    .app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 16px 40px}
+    header{text-align:center;padding:28px 0 12px;position:relative}
+    header h1{font-family:'Press Start 2P',monospace;font-size:1.15rem;background:linear-gradient(135deg,#ffcb05,#ff6b35,#ec4899,#ffcb05);background-size:300% 300%;animation:gradShift 4s ease infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px;line-height:1.6}
+    @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    header .sub{font-size:.75rem;color:var(--muted);margin-top:6px;display:flex;align-items:center;justify-content:center;gap:4px}
+    .coin-display{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(255,203,5,.12),rgba(255,107,53,.08));border:1px solid rgba(255,203,5,.2);border-radius:20px;padding:6px 16px;font-weight:800;font-size:.85rem;color:var(--pika);margin:8px auto 0;transition:all .3s;animation:coinPulse 2s ease-in-out infinite}
+    @keyframes coinPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,203,5,.1)}50%{box-shadow:0 0 0 6px rgba(255,203,5,0)}}
+    .coin-add{animation:coinBounce .5s cubic-bezier(.34,1.56,.64,1)}
+    @keyframes coinBounce{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+    .daily-banner{background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(59,130,246,.08));border:1px solid rgba(34,197,94,.2);border-radius:var(--radius);padding:14px 20px;margin:10px 0 16px;text-align:center;display:none;animation:slideDown .5s ease}
+    .daily-banner.show{display:block}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    .daily-banner .streak{font-size:1.5rem;font-weight:900;color:var(--success)}
+    .daily-banner .streak-label{font-size:.75rem;color:var(--muted)}
+    .daily-banner .reward{font-size:.85rem;font-weight:700;color:var(--pika);margin-top:4px}
+    .daily-banner .claim-btn{margin-top:8px;padding:8px 24px;background:linear-gradient(135deg,var(--success),#16a34a);border:none;border-radius:var(--radius-sm);color:#fff;font-weight:700;font-size:.8rem;cursor:pointer;transition:all .3s;font-family:inherit}
+    .daily-banner .claim-btn:hover{transform:scale(1.05);box-shadow:0 4px 15px rgba(34,197,94,.3)}
+    .daily-banner .claim-btn:disabled{opacity:.5;cursor:default;transform:none}
+    .mode-tabs{display:flex;gap:4px;justify-content:center;margin:4px 0 10px}
+    .mode-tabs button{padding:7px 22px;border:none;border-radius:var(--radius-sm);background:var(--glass);color:var(--muted);font-weight:700;font-size:.75rem;cursor:pointer;transition:all .3s;font-family:inherit;border:1px solid transparent}
+    .mode-tabs button.active-pkm{background:rgba(255,203,5,.15);color:var(--pika);border-color:rgba(255,203,5,.25);box-shadow:0 2px 10px rgba(255,203,5,.1)}
+    .mode-tabs button.active-dgm{background:rgba(168,85,247,.15);color:#a855f7;border-color:rgba(168,85,247,.25);box-shadow:0 2px 10px rgba(168,85,247,.1)}
+    .mode-tabs button:hover:not(.active-pkm):not(.active-dgm){color:var(--text);background:var(--glass-hover)}
+    nav{display:flex;gap:3px;justify-content:center;margin:12px 0 20px;background:var(--glass);border-radius:var(--radius);padding:4px;border:1px solid var(--glass-border);backdrop-filter:blur(10px)}
+    nav button{flex:1;max-width:120px;padding:10px 8px;border:none;border-radius:12px;background:transparent;color:var(--muted);font-weight:600;font-size:.72rem;cursor:pointer;transition:all .3s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px}
+    nav button.active{background:rgba(255,203,5,.12);color:var(--pika);box-shadow:0 2px 8px rgba(255,203,5,.08)}
+    nav button:hover:not(.active){color:var(--text);background:var(--glass)}
+    .nav-badge{display:inline-block;background:rgba(255,203,5,.15);color:var(--pika);font-size:.6rem;padding:1px 7px;border-radius:20px;font-weight:700}
+    nav button.active .nav-badge{background:var(--pika);color:#000}
+    .page{display:none;animation:pageFadeIn .3s ease}
+    .page.active{display:block}
+    @keyframes pageFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .pack-selector{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+    .pack-selector button{padding:8px 18px;border:1px solid var(--glass-border);border-radius:var(--radius-sm);background:var(--glass);color:var(--muted);font-weight:700;font-size:.75rem;cursor:pointer;transition:all .3s;font-family:inherit}
+    .pack-selector button.active{border-color:var(--pika);color:var(--pika);background:rgba(255,203,5,.08)}
+    .pack-selector button:hover:not(.active){border-color:var(--text);color:var(--text)}
+    .pack-selector .cost{font-size:.65rem;color:var(--muted);margin-left:4px}
+    .stats-bar{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
+    .stat-chip{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);padding:12px 18px;text-align:center;min-width:85px;backdrop-filter:blur(8px);transition:all .3s}
+    .stat-chip:hover{border-color:rgba(255,255,255,.12);transform:translateY(-2px)}
+    .stat-chip .num{font-size:1.3rem;font-weight:900;background:linear-gradient(135deg,var(--pika),#ff6b35);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .stat-chip .lbl{font-size:.6rem;color:var(--muted);text-transform:uppercase;margin-top:2px;letter-spacing:.5px}
+    .section-title{font-size:.85rem;font-weight:700;margin-bottom:14px;color:#cbd5e1;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px}
+    .section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--glass-border),transparent)}
+    .sets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+    .pack-card{background:linear-gradient(145deg,rgba(26,26,62,.8),rgba(22,33,62,.8));border:1px solid var(--glass-border);border-radius:var(--radius);padding:18px 14px;text-align:center;cursor:pointer;transition:all .35s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;backdrop-filter:blur(8px)}
+    .pack-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.03) 50%,transparent 60%);transform:translateX(-100%);transition:transform .6s}
+    .pack-card:hover::before{transform:translateX(100%)}
+    .pack-card:hover{transform:translateY(-6px) scale(1.02);border-color:var(--pika);box-shadow:0 16px 40px var(--accent-glow),0 0 0 1px rgba(255,203,5,.1)}
+    .pack-card .pack-img{width:90px;height:126px;margin:0 auto 10px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;transition:transform .3s}
+    .pack-card:hover .pack-img{transform:scale(1.08) rotate(1deg)}
+    .pack-card .pack-name{font-weight:700;font-size:.85rem;margin-bottom:2px}
+    .pack-card .pack-series{font-size:.68rem;color:var(--muted)}
+    .pack-card .pack-total{font-size:.68rem;color:var(--muted);margin-top:6px}
+    .pika-loading{text-align:center;padding:60px 20px;color:var(--muted)}
+    .pika-track{position:relative;height:80px;margin:0 auto 16px;max-width:300px;overflow:hidden}
+    .pika-track .road{position:absolute;bottom:10px;left:0;right:0;height:3px;background:rgba(255,255,255,.08);border-radius:2px}
+    .pika-track .road::after{content:'';position:absolute;top:-6px;left:0;right:0;height:14px;background:repeating-linear-gradient(90deg,transparent,transparent 16px,rgba(255,255,255,.05) 16px,rgba(255,255,255,.05) 18px)}
+    .pika-track img{position:absolute;bottom:14px;height:50px;animation:pikaRun 1.2s ease-in-out infinite alternate}
+    @keyframes pikaRun{0%{transform:translateX(-20px) scaleX(1)}48%{transform:translateX(calc(100% + 20px)) scaleX(1)}50%{transform:translateX(calc(100% + 20px)) scaleX(-1)}98%{transform:translateX(-20px) scaleX(-1)}100%{transform:translateX(-20px) scaleX(1)}}
+    .pika-text{font-size:.85rem;font-weight:600;color:var(--pika)}
+    .pika-sub{font-size:.75rem;color:var(--muted);margin-top:4px}
+    .pack-overlay{position:fixed;inset:0;z-index:100;background:rgba(5,5,20,.94);backdrop-filter:blur(16px);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+    .pack-overlay.active{display:flex}
+    .tear-container{text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px}
+    .tear-pack{width:170px;height:238px;background:linear-gradient(145deg,#f59e0b,#d97706);border-radius:14px;position:relative;animation:packShake .5s ease-in-out infinite alternate;display:flex;align-items:center;justify-content:center;font-size:2.8rem;box-shadow:0 20px 60px rgba(245,158,11,.3),0 0 0 1px rgba(245,158,11,.2);overflow:hidden;cursor:pointer}
+    .tear-pack::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.15) 50%,transparent 60%);animation:tearGlow .7s ease-in-out infinite}
+    @keyframes packShake{0%{transform:rotate(-2deg) scale(1)}100%{transform:rotate(2deg) scale(1.02)}}
+    @keyframes tearGlow{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+    .tear-pack .click-hint{position:absolute;bottom:-36px;left:50%;transform:translateX(-50%);font-size:.7rem;color:var(--pika);white-space:nowrap;animation:bounce 1s ease-in-out infinite}
+    @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+    .tear-text{font-size:1rem;font-weight:600;color:var(--pika);animation:pulse 1.2s ease-in-out infinite;min-height:1.5em}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+    .tear-flash{animation:flashOut .5s ease-out forwards}
+    @keyframes flashOut{0%{transform:scale(1);opacity:1}40%{transform:scale(1.2);opacity:.6;filter:brightness(3)}100%{transform:scale(0);opacity:0}}
+    .tear-container .loading-bar-wrap{width:200px;height:4px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+    .tear-container .loading-bar{height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,var(--pika),#ff6b35,#ec4899);transition:width .3s ease}
+    .cards-reveal{display:none;flex-direction:column;align-items:center;width:100%;max-width:950px}
+    .cards-reveal.active{display:flex}
+    .cards-reveal .reveal-header{text-align:center;margin-bottom:16px;width:100%}
+    .cards-reveal .reveal-header h2{font-size:1.1rem;color:var(--pika)}
+    .cards-reveal .reveal-header .set-info{font-size:.75rem;color:var(--muted)}
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;width:100%;perspective:1000px}
+    .card-item{aspect-ratio:2.5/3.5;border-radius:10px;overflow:hidden;position:relative;opacity:0;transform:rotateY(180deg) scale(.5);transition:all .5s cubic-bezier(.34,1.56,.64,1);cursor:pointer}
+    .card-item.revealed{opacity:1;transform:rotateY(0deg) scale(1)}
+    .card-item:hover{transform:rotateY(0deg) scale(1.06);z-index:5}
+    .card-item img{width:100%;height:100%;object-fit:cover;display:block}
+    .card-item .card-info{position:absolute;bottom:0;left:0;right:0;padding:6px 8px;background:linear-gradient(transparent,rgba(0,0,0,.9));color:#fff;font-size:.65rem;font-weight:600;opacity:0;transition:opacity .3s}
+    .card-item:hover .card-info{opacity:1}
+    .card-item .rarity-badge{position:absolute;top:4px;right:4px;font-size:.55rem;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.75);backdrop-filter:blur(4px)}
+    .card-item.rar-Common{border:2px solid #475569}
+    .card-item.rar-Uncommon{border:2px solid #22c55e}
+    .card-item.rar-Rare{border:2px solid #3b82f6}
+    .card-item[class*="rar-Rare"],.card-item[class*="rar-Ultra"],.card-item[class*="rar-Secret"],.card-item[class*="rar-Shiny"],.card-item[class*="rar-Double"],.card-item[class*="rar-Amazing"],.card-item[class*="rar-illustration"],.card-item[class*="rar-Holo"],.card-item[class*="rar-Super"]{border:2px solid #f59e0b}
+    .card-item.holo::before{content:'';position:absolute;inset:-2px;z-index:2;background:linear-gradient(135deg,transparent 20%,rgba(255,0,0,.08) 30%,rgba(255,165,0,.08) 40%,rgba(255,255,0,.08) 50%,rgba(0,255,0,.08) 60%,rgba(0,0,255,.08) 70%,rgba(128,0,128,.08) 80%,transparent 90%);background-size:200% 200%;animation:holoShimmer 3s ease-in-out infinite;pointer-events:none;border-radius:10px}
+    @keyframes holoShimmer{0%{background-position:-100% -100%}100%{background-position:200% 200%}}
+    .card-item.rare-pulse{animation:rareGlow 1.5s ease-in-out 2}
+    @keyframes rareGlow{0%,100%{box-shadow:0 0 5px rgba(245,158,11,.2)}50%{box-shadow:0 0 25px rgba(245,158,11,.7),0 0 50px rgba(245,158,11,.2)}}
+    .close-btn{margin-top:18px;padding:12px 32px;border:2px solid rgba(255,255,255,.12);border-radius:var(--radius);background:var(--glass);color:#fff;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .3s;font-family:inherit;backdrop-filter:blur(8px)}
+    .close-btn:hover{border-color:var(--pika);color:var(--pika);background:rgba(255,203,5,.08);transform:scale(1.03)}
+    .detail-overlay{position:fixed;inset:0;z-index:200;background:rgba(5,5,20,.95);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+    .detail-overlay.active{display:flex}
+    .detail-card{max-width:500px;width:100%;text-align:center;max-height:92vh;overflow-y:auto;background:rgba(26,26,62,.5);border:1px solid var(--glass-border);border-radius:20px;padding:24px;backdrop-filter:blur(12px)}
+    .detail-card .main-img{width:100%;max-width:280px;border-radius:14px;margin-bottom:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);cursor:zoom-in;transition:transform .3s}
+    .detail-card .main-img:hover{transform:scale(1.03)}
+    .detail-card .main-img.zoomed{transform:scale(1.8);cursor:zoom-out;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+    .detail-card h3{font-size:1.15rem}
+    .detail-card .sub-info{color:var(--muted);font-size:.75rem;margin-bottom:6px}
+    .detail-card .price-tag{padding:6px 14px;background:rgba(255,203,5,.08);border:1px solid rgba(255,203,5,.15);border-radius:10px;display:inline-block;font-size:.8rem;color:#fbbf24;margin-bottom:10px}
+    .poke-box{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);padding:16px;margin-top:12px;text-align:left}
+    .poke-box .poke-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .poke-box .poke-head img{width:48px;height:48px;image-rendering:pixelated}
+    .poke-box .poke-head .pn{font-weight:700;font-size:.95rem}
+    .poke-box .poke-head .pid{color:var(--muted);font-size:.7rem}
+    .type-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px 3px 6px;border-radius:20px;font-size:.65rem;font-weight:600;text-transform:uppercase;margin:2px}
+    .type-badge img{width:14px;height:14px}
+    .type-Grass{background:#78c850;color:#000}.type-Fire{background:#f08030;color:#fff}.type-Water{background:#6890f0;color:#fff}.type-Lightning,.type-Electric{background:#f8d030;color:#000}.type-Psychic{background:#f85888;color:#fff}.type-Fighting{background:#c03028;color:#fff}.type-Darkness,.type-Dark{background:#705848;color:#fff}.type-Metal,.type-Steel{background:#b8b8d0;color:#000}.type-Fairy{background:#ee99ac;color:#000}.type-Dragon{background:#7038f8;color:#fff}.type-Colorless,.type-Normal{background:#a8a878;color:#000}.type-Ground{background:#e0c068;color:#000}.type-Poison{background:#a040a0;color:#fff}.type-Flying{background:#a890f0;color:#000}.type-Bug{background:#a8b820;color:#000}.type-Rock{background:#b8a038;color:#000}.type-Ghost{background:#705898;color:#fff}.type-Ice{background:#98d8d8;color:#000}
+    .type-icon-img{width:14px;height:14px;vertical-align:middle}
+    .poke-box .stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+    .poke-box .stat-grid .s-item{text-align:center}
+    .poke-box .stat-grid .s-val{font-size:.95rem;font-weight:700}
+    .poke-box .stat-grid .s-lbl{font-size:.58rem;color:var(--muted);text-transform:uppercase}
+    .poke-box .evo-row{display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:center;flex-wrap:wrap}
+    .poke-box .evo-row .evo-item{display:flex;flex-direction:column;align-items:center;cursor:default}
+    .poke-box .evo-row .evo-item img{width:32px;height:32px;image-rendering:pixelated}
+    .poke-box .evo-row .evo-item span{font-size:.65rem;color:var(--muted)}
+    .poke-box .evo-row .evo-arrow{color:var(--muted);font-size:1rem}
+    .btn-sm{padding:7px 16px;border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-sm);background:transparent;color:var(--muted);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .3s;font-family:inherit}
+    .btn-sm:hover{border-color:var(--pika);color:var(--pika)}
+    .btn-del:hover{border-color:#ef4444!important;color:#ef4444!important}
+    .btn-share:hover{border-color:#3b82f6!important;color:#3b82f6!important}
+    .detail-card .translate-btn{margin-top:6px;padding:6px 16px;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-sm);background:transparent;color:var(--muted);font-size:.75rem;cursor:pointer;transition:all .3s;font-family:inherit}
+    .detail-card .translate-btn:hover{border-color:#a78bfa;color:#a78bfa}
+    .translation-result{margin-top:4px;font-size:.8rem;color:#a78bfa;font-style:italic;min-height:1.2em}
+    .clear-all-btn{padding:8px 18px;border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-sm);background:rgba(239,68,68,.06);color:#ef4444;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .3s;font-family:inherit;margin-left:auto}
+    .clear-all-btn:hover{background:rgba(239,68,68,.12)}
+    .coll-header{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    .coll-header input{flex:1;min-width:140px;padding:9px 14px;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-sm);background:var(--glass);color:#fff;font-size:.8rem;font-family:inherit;outline:none;transition:border .3s;backdrop-filter:blur(4px)}
+    .coll-header input:focus{border-color:var(--pika)}
+    .coll-header input::placeholder{color:var(--muted)}
+    .coll-header select{padding:9px 12px;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-sm);background:var(--glass);color:var(--text);font-size:.75rem;font-family:inherit;outline:none;cursor:pointer;backdrop-filter:blur(4px)}
+    .coll-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+    .coll-empty{text-align:center;padding:60px 20px;color:var(--muted)}
+    .coll-empty p{font-size:.9rem;margin-bottom:4px}
+    .coll-empty .sub{font-size:.75rem}
+    .history-list{max-height:500px;overflow-y:auto}
+    .history-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--glass-border);font-size:.78rem;transition:background .2s}
+    .history-item:hover{background:var(--glass)}
+    .history-item img{width:40px;height:56px;border-radius:4px;object-fit:cover}
+    .history-item .hi-name{font-weight:700}
+    .history-item .hi-meta{color:var(--muted);font-size:.68rem}
+    .history-item .hi-rare{margin-left:auto;padding:2px 8px;border-radius:12px;font-size:.6rem;font-weight:700;background:rgba(245,158,11,.12);color:#fbbf24}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+    .stat-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);padding:18px;text-align:center;backdrop-filter:blur(8px)}
+    .stat-card .sc-val{font-size:2rem;font-weight:900;background:linear-gradient(135deg,var(--pika),#ff6b35);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .stat-card .sc-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-top:4px}
+    .stat-card .sc-sub{font-size:.68rem;color:var(--muted);margin-top:2px}
+    .lucky-bar{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(236,72,153,.06));border:1px solid rgba(245,158,11,.15);border-radius:var(--radius);padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+    .lucky-bar .lucky-label{font-size:.75rem;color:#fbbf24;font-weight:700;white-space:nowrap}
+    .lucky-bar .lucky-progress{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+    .lucky-bar .lucky-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#f59e0b,#ec4899);transition:width .5s ease}
+    .lucky-bar .lucky-count{font-size:.75rem;color:var(--muted);white-space:nowrap}
+    .joke-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);z-index:150;background:rgba(30,41,59,.95);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:14px 22px;max-width:400px;text-align:center;font-size:.8rem;color:#cbd5e1;opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+    .joke-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .scroll-top{position:fixed;bottom:24px;right:24px;z-index:90;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--pika),#ff6b35);border:none;color:#000;font-size:1.2rem;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(255,203,5,.3);opacity:0;transform:translateY(20px);pointer-events:none}
+    .scroll-top.show{opacity:1;transform:translateY(0);pointer-events:all}
+    .scroll-top:hover{transform:translateY(-2px) scale(1.1);box-shadow:0 6px 20px rgba(255,203,5,.4)}
+    .sound-toggle{position:fixed;top:16px;right:16px;z-index:90;width:38px;height:38px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-border);color:var(--muted);font-size:1.1rem;cursor:pointer;transition:all .3s;backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center}
+    .sound-toggle:hover{border-color:var(--pika);color:var(--pika)}
+    .sound-toggle.muted{opacity:.4}
+    .io-btn{padding:8px 16px;border:1px solid var(--glass-border);border-radius:var(--radius-sm);background:var(--glass);color:var(--text);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .3s;font-family:inherit;display:inline-flex;align-items:center;gap:4px}
+    .io-btn:hover{border-color:var(--pika);color:var(--pika)}
+    .io-btn input[type="file"]{display:none}
+    body.mode-digimon{--pika:#a855f7;--pika-dark:#9333ea;--bg:#08081a;--card-bg:#18182e;--accent-glow:rgba(168,85,247,.3)}
+    body.mode-digimon .bg-gradient{background:radial-gradient(ellipse at 20% 20%,rgba(168,85,247,.05) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(236,72,153,.05) 0%,transparent 50%),radial-gradient(ellipse at 50% 50%,rgba(99,102,241,.03) 0%,transparent 60%)}
+    body.mode-digimon h1{background:linear-gradient(135deg,#a855f7,#ec4899,#6366f1,#a855f7);background-size:300% 300%;animation:gradShift 4s ease infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    body.mode-digimon nav button.active{background:rgba(168,85,247,.12);color:#a855f7;box-shadow:0 2px 8px rgba(168,85,247,.08)}
+    body.mode-digimon .nav-badge{background:rgba(168,85,247,.15);color:#a855f7}
+    body.mode-digimon nav button.active .nav-badge{background:#a855f7;color:#fff}
+    body.mode-digimon .pack-card:hover{border-color:#a855f7;box-shadow:0 16px 40px rgba(168,85,247,.15)}
+    body.mode-digimon .coin-display{background:linear-gradient(135deg,rgba(168,85,247,.12),rgba(236,72,153,.08));border-color:rgba(168,85,247,.2);color:#a855f7}
+    body.mode-digimon .stat-chip .num{background:linear-gradient(135deg,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    body.mode-digimon .stat-card .sc-val{background:linear-gradient(135deg,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    body.mode-digimon .pack-selector button.active{border-color:#a855f7;color:#a855f7;background:rgba(168,85,247,.08)}
+    body.mode-digimon .scroll-top{background:linear-gradient(135deg,#a855f7,#ec4899);box-shadow:0 4px 15px rgba(168,85,247,.3)}
+    .digi-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:.65rem;font-weight:600;text-transform:uppercase;margin:2px}
+    .digi-Red{background:#e74c3c;color:#fff}.digi-Blue{background:#3498db;color:#fff}.digi-Yellow{background:#f1c40f;color:#000}.digi-Green{background:#2ecc71;color:#000}.digi-Purple{background:#9b59b6;color:#fff}.digi-Black{background:#2c3e50;color:#fff}.digi-White{background:#ecf0f1;color:#000}.digi-Colorless{background:#95a5a6;color:#000}.digi-Pink{background:#fd79a8;color:#000}
+    .digi-detail-box{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);padding:16px;margin-top:12px;text-align:left}
+    .digi-detail-box .digi-row{display:flex;justify-content:space-between;padding:4px 0;font-size:.78rem;border-bottom:1px solid rgba(255,255,255,.04)}
+    .digi-detail-box .digi-row:last-child{border-bottom:none}
+    .digi-detail-box .digi-label{color:var(--muted)}
+    .digi-detail-box .digi-value{font-weight:600}
+    .digi-detail-box .digi-effect{margin-top:8px;font-size:.75rem;color:#cbd5e1;background:rgba(255,255,255,.03);border-radius:8px;padding:10px}
+    .gi{vertical-align:middle}
+    .gi-white{filter:brightness(0) invert(1)}
+    img[src*="fox-head"]{filter:brightness(0) invert(1)}
+    .ic-inline{width:14px;height:14px;vertical-align:middle}
+    .ic-sm{width:12px;height:12px;vertical-align:middle}
+    .ic-lg{width:18px;height:18px;vertical-align:middle}
+    .ic-xl{width:40px;height:40px;vertical-align:middle}
+    @media(max-width:600px){header h1{font-size:.8rem}.sets-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.tear-pack{width:140px;height:196px;font-size:2rem}.cards-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}.pack-card .pack-img{width:70px;height:98px}.stats-bar{gap:6px}.stat-chip{padding:8px 10px;min-width:60px}.stat-chip .num{font-size:1rem}.poke-box .stat-grid{grid-template-columns:repeat(3,1fr)}nav button{font-size:.65rem;padding:8px 6px}.stats-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.detail-card{padding:16px}}
   </style>
 </head>
 <body>
-<div class="bg-balls">
-  <span></span><span></span><span></span><span></span><span></span>
-</div>
-
+<canvas id="particleCanvas"></canvas>
+<div class="bg-gradient"></div>
+<button class="sound-toggle" id="soundToggle" onclick="toggleSound()" title="Toggle Sound">🔊</button>
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 <div class="app">
-    <header>
-      <h1 id="mainTitle">
-        <span id="titleIcon"><svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="#333"/></svg></span>
-        <span id="titleText">BREWEK POKÉMON KUY</span>
-      </h1>
-      <div class="sub" id="subText"><img src="https://api.iconify.design/game-icons/star-cycle.svg?height=12" class="gi" alt=""> Buka pack, kumpulin, pamerin ke temen-temen!</div>
-    </header>
-
-    <div class="mode-tabs">
-      <button onclick="switchMode('pokemon')" id="modePkm" class="active-pkm"><img src="https://api.iconify.design/game-icons/lightning-arc.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Pokémon</button>
-      <button onclick="switchMode('digimon')" id="modeDgm"><img src="https://api.iconify.design/game-icons/dinosaur-rex.svg?height=16" class="gi ic-inline" style="margin-right:2px"> Digimon</button>
-    </div>
-
+  <header>
+    <h1 id="mainTitle"><span id="titleIcon"><svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="#333"/></svg></span><span id="titleText">BREWEK POKÉMON KUY</span></h1>
+    <div class="sub" id="subText"><img src="https://api.iconify.design/game-icons/star-cycle.svg?height=12" class="gi" alt=""> Buka pack, kumpulin, pamerin ke temen-temen!</div>
+    <div class="coin-display"><span>🪙</span><span class="coin-amount" id="coinDisplay">0</span></div>
+  </header>
+  <div class="daily-banner" id="dailyBanner">
+    <div class="streak" id="streakCount">🔥 0</div>
+    <div class="streak-label">Hari berturut-turut</div>
+    <div class="reward" id="dailyReward">+50 koin hadiah harian!</div>
+    <button class="claim-btn" id="claimBtn" onclick="claimDaily()">Klaim Hadiah</button>
+  </div>
+  <div class="mode-tabs">
+    <button onclick="switchMode('pokemon')" id="modePkm" class="active-pkm"><img src="https://api.iconify.design/game-icons/lightning-arc.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Pokémon</button>
+    <button onclick="switchMode('digimon')" id="modeDgm"><img src="https://api.iconify.design/game-icons/dinosaur-rex.svg?height=16" class="gi ic-inline" style="margin-right:2px"> Digimon</button>
+  </div>
   <nav>
-    <button class="active" onclick="showPage('home')" id="navHome">
-      <svg style="width:16px;height:16px;vertical-align:middle;margin-right:2px" viewBox="0 0 256 256">
-        <circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/>
-        <path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/>
-        <circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/>
-        <circle cx="128" cy="128" r="16" fill="#333"/>
-      </svg>
-      Buka Pack
-    </button>
-    <button onclick="showPage('collection')" id="navCollection">
-      <img src="https://api.iconify.design/game-icons/cargo-crate.svg?height=14" class="gi" style="margin-right:2px" alt="">
-      Koleksi <span class="nav-badge" id="collBadge">0</span>
-    </button>
+    <button class="active" onclick="showPage('home')" id="navHome"><svg style="width:14px;height:14px;vertical-align:middle" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="#333"/></svg> Buka Pack</button>
+    <button onclick="showPage('collection')" id="navCollection"><img src="https://api.iconify.design/game-icons/cargo-crate.svg?height=14" class="gi" alt=""> Koleksi <span class="nav-badge" id="collBadge">0</span></button>
+    <button onclick="showPage('history')" id="navHistory"><img src="https://api.iconify.design/game-icons/paper.svg?height=14" class="gi" alt=""> Riwayat</button>
+    <button onclick="showPage('stats')" id="navStats"><img src="https://api.iconify.design/game-icons/stack.svg?height=14" class="gi" alt=""> Statistik</button>
   </nav>
-
-  <!-- HOME PAGE -->
   <div class="page active" id="pageHome">
-    <div class="pika-loading" id="pikaLoading">
-      <div class="pika-track">
-        <div class="road"></div>
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu">
-      </div>
-      <div class="pika-text">Loading data set...</div>
-      <div class="pika-sub">Pikachu lagi lari cari kartu Pokémon</div>
-    </div>
+    <div class="pika-loading" id="pikaLoading"><div class="pika-track"><div class="road"></div><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu"></div><div class="pika-text">Loading data set...</div><div class="pika-sub">Pikachu lagi lari cari kartu Pokémon</div></div>
     <div id="homeContent" style="display:none">
-      <div class="stats-bar" id="statsBar">
-        <div class="stat-chip"><div class="num" id="statPacks">0</div><div class="lbl">Pack Dibuka</div></div>
-        <div class="stat-chip"><div class="num" id="statCards">0</div><div class="lbl">Total Kartu</div></div>
-        <div class="stat-chip"><div class="num" id="statRare">0</div><div class="lbl"><img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt=""> Rare</div></div>
-      </div>
+      <div class="stats-bar" id="statsBar"><div class="stat-chip"><div class="num" id="statPacks">0</div><div class="lbl">Pack Dibuka</div></div><div class="stat-chip"><div class="num" id="statCards">0</div><div class="lbl">Total Kartu</div></div><div class="stat-chip"><div class="num" id="statRare">0</div><div class="lbl"><img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt=""> Rare</div></div></div>
+      <div class="lucky-bar" id="luckyBar"><div class="lucky-label">🎰 Lucky Pack</div><div class="lucky-progress"><div class="lucky-fill" id="luckyFill" style="width:0%"></div></div><div class="lucky-count" id="luckyCount">0/10</div></div>
+      <div class="section-title">Jumlah Pack</div>
+      <div class="pack-selector" id="packSelector"><button class="active" onclick="setPackCount(1)">1 Pack <span class="cost">(gratis)</span></button><button onclick="setPackCount(3)">3 Pack <span class="cost">(50 🪙)</span></button><button onclick="setPackCount(5)">5 Pack <span class="cost">(80 🪙)</span></button></div>
       <div class="section-title">Pilih Booster Pack</div>
       <div class="sets-grid" id="setsGrid"></div>
     </div>
   </div>
-
-  <!-- COLLECTION PAGE -->
   <div class="page" id="pageCollection">
-    <div class="stats-bar" id="collStats">
-      <div class="stat-chip"><div class="num" id="collTotal">0</div><div class="lbl">Total Kartu</div></div>
-      <div class="stat-chip"><div class="num" id="collUnique">0</div><div class="lbl">Unik</div></div>
-      <div class="stat-chip"><div class="num" id="collRare">0</div><div class="lbl"><img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt=""> Rare</div></div>
-    </div>
-    <div class="coll-header">
-      <div style="position:relative;flex:1;min-width:140px">
-        <img src="https://api.iconify.design/game-icons/magnifying-glass.svg?height=14" class="gi" style="width:14px;height:14px;position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none" alt="">
-        <input type="text" id="collSearch" placeholder="Cari kartu..." oninput="renderCollection()" style="padding-left:32px">
-      </div>
-      <select id="collFilter" onchange="renderCollection()">
-        <option value="all">Semua</option>
-        <option value="Rare">Rare \u2728</option>
-        <option value="Ultra">Ultra Rare</option>
-        <option value="Secret">Secret Rare</option>
-        <option value="Common">Common</option>
-        <option value="Uncommon">Uncommon</option>
-      </select>
-      <button class="clear-all-btn" onclick="clearAll()"><img src="https://api.iconify.design/game-icons/trash-can.svg?height=12" class="gi" style="margin-right:3px" alt=""> Hapus Semua</button>
-    </div>
+    <div class="stats-bar" id="collStats"><div class="stat-chip"><div class="num" id="collTotal">0</div><div class="lbl">Total Kartu</div></div><div class="stat-chip"><div class="num" id="collUnique">0</div><div class="lbl">Unik</div></div><div class="stat-chip"><div class="num" id="collRare">0</div><div class="lbl"><img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt=""> Rare</div></div></div>
+    <div class="coll-header"><div style="position:relative;flex:1;min-width:140px"><img src="https://api.iconify.design/game-icons/magnifying-glass.svg?height=14" class="gi" style="width:14px;height:14px;position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none" alt=""><input type="text" id="collSearch" placeholder="Cari kartu..." oninput="renderCollection()" style="padding-left:32px"></div><select id="collFilter" onchange="renderCollection()"><option value="all">Semua</option><option value="Rare">Rare ✨</option><option value="Ultra">Ultra Rare</option><option value="Secret">Secret Rare</option><option value="Common">Common</option><option value="Uncommon">Uncommon</option></select><button class="clear-all-btn" onclick="clearAll()"><img src="https://api.iconify.design/game-icons/trash-can.svg?height=12" class="gi" style="margin-right:3px" alt=""> Hapus Semua</button></div>
+    <div class="coll-actions"><button class="io-btn" onclick="exportCollection()"><img src="https://api.iconify.design/game-icons/share.svg?height=12" class="gi" alt=""> Export</button><label class="io-btn"><img src="https://api.iconify.design/game-icons/cargo-crate.svg?height=12" class="gi" alt=""> Import<input type="file" accept=".json" onchange="importCollection(event)"></label></div>
     <div class="cards-grid" id="collGrid"></div>
-    <div class="coll-empty" id="collEmpty" style="display:none">
-      <img src="https://api.iconify.design/game-icons/envelope.svg?height=48" class="gi" style="margin-bottom:12px" alt="">
-      <p>Belum ada kartu nih!</p>
-      <div class="sub">Buka pack dulu di halaman Buka Pack</div>
-    </div>
+    <div class="coll-empty" id="collEmpty" style="display:none"><img src="https://api.iconify.design/game-icons/envelope.svg?height=48" class="gi" style="margin-bottom:12px" alt=""><p>Belum ada kartu nih!</p><div class="sub">Buka pack dulu di halaman Buka Pack</div></div>
+  </div>
+  <div class="page" id="pageHistory">
+    <div class="section-title">Riwayat Buka Pack</div>
+    <div class="history-list" id="historyList"></div>
+    <div class="coll-empty" id="historyEmpty" style="display:none"><img src="https://api.iconify.design/game-icons/paper.svg?height=48" class="gi" style="margin-bottom:12px" alt=""><p>Belum ada riwayat</p><div class="sub">Buka pack untuk mulai mencatat riwayat</div></div>
+  </div>
+  <div class="page" id="pageStats">
+    <div class="section-title">Statistik Koleksi</div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="section-title">Kartu Paling Sering Didapat</div>
+    <div class="cards-grid" id="topCardsGrid" style="margin-bottom:20px"></div>
+    <div class="section-title">Kartu Paling Langka</div>
+    <div class="cards-grid" id="rareCardsGrid"></div>
   </div>
 </div>
-
-<!-- Pack opening overlay -->
 <div class="pack-overlay" id="packOverlay">
-  <div class="tear-container" id="tearContainer">
-    <div class="tear-pack" id="tearPack">
-      <img src="https://api.iconify.design/game-icons/present.svg?height=48" class="gi" alt="">
-      <div class="click-hint">Klik untuk robek!</div>
-    </div>
-    <div class="tear-text" id="tearText">Klik pack untuk membuka</div>
-    <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
-  </div>
-  <div class="cards-reveal" id="cardsReveal">
-    <div class="reveal-header">
-      <h2 id="revealSetName"></h2>
-      <div class="set-info" id="revealSetInfo">Klik kartu buat detail</div>
-    </div>
-    <div class="cards-grid" id="cardsGrid"></div>
-    <button class="close-btn" onclick="closePack()"><img src="https://api.iconify.design/game-icons/archive-register.svg?height=14" class="gi" style="margin-right:4px" alt=""> Simpan ke Koleksi</button>
-  </div>
+  <div class="tear-container" id="tearContainer"><div class="tear-pack" id="tearPack"><img src="https://api.iconify.design/game-icons/present.svg?height=48" class="gi" alt=""><div class="click-hint">Klik untuk robek!</div></div><div class="tear-text" id="tearText">Klik pack untuk membuka</div><div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div></div>
+  <div class="cards-reveal" id="cardsReveal"><div class="reveal-header"><h2 id="revealSetName"></h2><div class="set-info" id="revealSetInfo">Klik kartu buat detail</div></div><div class="cards-grid" id="cardsGrid"></div><button class="close-btn" onclick="closePack()"><img src="https://api.iconify.design/game-icons/archive-register.svg?height=14" class="gi" style="margin-right:4px" alt=""> Simpan ke Koleksi</button></div>
 </div>
-
-<!-- Card detail modal -->
 <div class="detail-overlay" id="detailOverlay">
   <div class="detail-card">
-    <img class="main-img" id="detailImg" src="">
-    <h3 id="detailName"></h3>
-    <div class="sub-info" id="detailSub"></div>
-    <div class="price-tag" id="detailPrice"></div>
+    <img class="main-img" id="detailImg" src="" onclick="this.classList.toggle('zoomed')">
+    <h3 id="detailName"></h3><div class="sub-info" id="detailSub"></div><div class="price-tag" id="detailPrice"></div>
     <div id="pokeInfo"></div>
-      <button class="translate-btn" id="translateBtn" onclick="translateCard()"><img src="https://api.iconify.design/game-icons/chat-bubble.svg?height=12" class="gi" style="margin-right:3px" alt=""> Yoda-speak</button>
-    <div class="translation-result" id="translationResult"></div>
-    <br>
-    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px">
-      <button class="btn-sm btn-share" id="shareBtn" onclick="shareCard()"><img src="https://api.iconify.design/game-icons/share.svg?height=12" class="gi" style="margin-right:3px" alt=""> Bagikan</button>
-      <button class="btn-sm btn-del" id="deleteBtn" onclick="deleteCard()"><img src="https://api.iconify.design/game-icons/trash-can.svg?height=12" class="gi" style="margin-right:3px" alt=""> Hapus</button>
-      <button class="btn-sm" onclick="document.getElementById('detailOverlay').classList.remove('active')"><img src="https://api.iconify.design/game-icons/cancel.svg?height=12" class="gi" style="margin-right:3px" alt=""> Tutup</button>
-    </div>
+    <button class="translate-btn" id="translateBtn" onclick="translateCard()"><img src="https://api.iconify.design/game-icons/chat-bubble.svg?height=12" class="gi" style="margin-right:3px" alt=""> Yoda-speak</button>
+    <div class="translation-result" id="translationResult"></div><br>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px"><button class="btn-sm btn-share" id="shareBtn" onclick="shareCard()"><img src="https://api.iconify.design/game-icons/share.svg?height=12" class="gi" style="margin-right:3px" alt=""> Bagikan</button><button class="btn-sm btn-del" id="deleteBtn" onclick="deleteCard()"><img src="https://api.iconify.design/game-icons/trash-can.svg?height=12" class="gi" style="margin-right:3px" alt=""> Hapus</button><button class="btn-sm" onclick="document.getElementById('detailOverlay').classList.remove('active')"><img src="https://api.iconify.design/game-icons/cancel.svg?height=12" class="gi" style="margin-right:3px" alt=""> Tutup</button></div>
   </div>
 </div>
-
 <div class="joke-toast" id="jokeToast"></div>
-
 <script>
-// ======== CONFIG ========
-const TCG_API = 'https://api.pokemontcg.io/v2';
-const POKE_API = 'https://pokeapi.co/api/v2';
-const FUNTRANS_API = 'https://api.funtranslations.com/translate';
-const JOKE_API = 'https://v2.jokeapi.dev/joke/Any?type=single&safe-mode';
-const TIMEOUT = 25000;
-const STORAGE_KEY = 'brewek_koleksi';
-const TYPE_ICONS = 'https://unpkg.com/@pokemonle/icons-svg@latest/icons';
-
-const DIGIMON_API = 'https://digimoncard.io/api-public';
-const DIGIMON_IMG = 'https://images.digimoncard.io/img/cards';
-const DIGIMON_STORAGE = 'digimon_koleksi';
-
-let gameMode = 'pokemon';
-let allSets = [];
-let digimonSets = [];
-let digimonAllCards = [];
-let openedCards = [];
-let collection = [];
-let audioCtx = null;
-let currentPokeName = '';
-const pokeIdCache = {};
-function gi(icon, size = 16) {
-  return `<img class="gi" src="https://api.iconify.design/game-icons/${icon}.svg?height=${size}" style="width:${size}px;height:${size}px" alt="">`;
-}
-function digiError(el) {
-  const d = document.createElement('div');
-  d.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);font-size:1.5rem;text-align:center;padding:10px;word-break:break-word;flex-direction:column';
-  d.innerHTML = '<img src="https://api.iconify.design/game-icons/card-random.svg?height=32" style="width:32px;height:32px;display:block;margin:0 auto 4px" alt=""><span>' + (el.alt || 'Digimon') + '</span>';
-  el.replaceWith(d);
-}
-
-// ======== HELPERS ========
-function fetchJSON(url, timeout = TIMEOUT) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeout);
-  return fetch(url, { signal: ctrl.signal })
-    .then(r => { clearTimeout(timer); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-    .catch(e => { clearTimeout(timer); throw e; });
-}
-
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function getStorageKey() { return gameMode === 'pokemon' ? STORAGE_KEY : DIGIMON_STORAGE; }
-
-function loadCollection() {
-  try { collection = JSON.parse(localStorage.getItem(getStorageKey()) || '[]'); } catch { collection = []; }
-}
-
-function saveCollection() {
-  localStorage.setItem(getStorageKey(), JSON.stringify(collection));
-}
-
-function isRare(rarity) {
-  if (!rarity) return false;
-  return /Rare|Ultra|Secret|Shiny/i.test(rarity);
-}
-
-// ======== DIGIMON HELPERS ========
-function isDigimonRare(r) {
-  if (!r) return false;
-  const rn = (r+'').toLowerCase();
-  return ['rare','super','secret','alt art','promo'].some(s => rn.includes(s));
-}
-
-// ======== MODE SWITCHING ========
-async function switchMode(mode) {
-  if (mode === gameMode) return;
-  // Close any open overlays
-  document.getElementById('packOverlay').classList.remove('active');
-  document.getElementById('detailOverlay').classList.remove('active');
-  isOpening = false;
-
-  gameMode = mode;
-  document.body.classList.toggle('mode-digimon', mode === 'digimon');
-
-  document.getElementById('modePkm').className = mode === 'pokemon' ? 'active-pkm' : '';
-  document.getElementById('modeDgm').className = mode === 'digimon' ? 'active-dgm' : '';
-
-  if (mode === 'digimon') {
-    document.getElementById('titleIcon').innerHTML =
-      `<svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256">
-        <circle cx="128" cy="128" r="120" fill="#a855f7" stroke="#9333ea" stroke-width="8"/>
-        <path d="M128 8a120 120 0 0 1 0 240" fill="#7c3aed"/>
-        <circle cx="128" cy="128" r="36" fill="#a855f7" stroke="#9333ea" stroke-width="8"/>
-        <circle cx="128" cy="128" r="16" fill="#9333ea"/>
-        <text x="128" y="138" text-anchor="middle" font-size="80" fill="#fff" font-weight="bold">D</text>
-      </svg>`;
-    document.getElementById('titleText').textContent = 'BREWEK DIGIMON KUY';
-    document.getElementById('subText').innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Buka pack Digimon, kumpulin karti Digimon!';
-    document.getElementById('pokeInfo').innerHTML = '';
-    document.getElementById('collFilter').innerHTML =
-      `<option value="all">Semua</option>
-       <option value="Rare">Rare \u2728</option>
-       <option value="Super Rare">Super Rare</option>
-       <option value="Secret Rare">Secret Rare</option>
-       <option value="Common">Common</option>
-       <option value="Uncommon">Uncommon</option>`;
-  } else {
-    document.getElementById('titleIcon').innerHTML =
-      `<svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256">
-        <circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/>
-        <path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/>
-        <circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/>
-        <circle cx="128" cy="128" r="16" fill="#333"/>
-      </svg>`;
-    document.getElementById('titleText').textContent = 'BREWEK POKÉMON KUY';
-    document.getElementById('subText').innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Buka pack, kumpulin, pamerin ke temen-temen!';
-    document.getElementById('collFilter').innerHTML =
-      `<option value="all">Semua</option>
-       <option value="Rare">Rare \u2728</option>
-       <option value="Ultra">Ultra Rare</option>
-       <option value="Secret">Secret Rare</option>
-       <option value="Common">Common</option>
-       <option value="Uncommon">Uncommon</option>`;
-  }
-
-  loadCollection();
-  updateStats();
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('pageHome').classList.add('active');
-  document.getElementById('navHome').classList.add('active');
-  document.getElementById('navCollection').classList.remove('active');
-  document.getElementById('homeContent').style.display = 'none';
-  document.getElementById('pikaLoading').style.display = 'block';
-  document.getElementById('pikaLoading').innerHTML =
-    '<div class="pika-track"><div class="road"></div><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu"></div><div class="pika-text">Loading...</div><div class="pika-sub">Memuat data...</div>';
-  init();
-}
-
-// ======== DIGIMON DATA ========
-async function loadDigimonSets() {
-  const pikaText = document.querySelector('.pika-text');
-  const pikaSub = document.querySelector('.pika-sub');
-  const pikaImg = document.querySelector('.pika-track img');
-
-  if (pikaImg) {
-    pikaImg.src = 'https://digi-api.com/images/digimon/w/Agumon.png';
-    pikaImg.style.height = '50px';
-    pikaImg.style.imageRendering = 'auto';
-  }
-
-  // Use cached data if available
-  if (digimonAllCards.length > 0) {
-    renderDigimonSets();
-    document.getElementById('pikaLoading').style.display = 'none';
-    document.getElementById('homeContent').style.display = 'block';
-    return;
-  }
-
-  pikaText.textContent = 'Download data kartu Digimon...';
-  pikaSub.textContent = 'Agumon lagi lari cari data kartu (sekitar 5MB)';
-
-  try {
-    const cards = await fetchJSON(`${DIGIMON_API}/search?series=Digimon+Card+Game&limit=5000`, 60000);
-    if (!Array.isArray(cards)) throw new Error('Invalid response');
-    digimonAllCards = cards;
-
-    // Build set map, including all valid booster/starter sets
-    const setMap = {};
-    for (const card of cards) {
-      for (const s of card.set_name || []) {
-        const exclude = s.includes('Memorial') || s.includes('Playmat') || s.includes('Dash Pack') ||
-          s.includes('PB-09') || s.startsWith('BTC-') || /^BO-/.test(s);
-        if (exclude) continue;
-        if (!setMap[s]) setMap[s] = { name: s, count: 0, cards: [] };
-        setMap[s].count++;
-        setMap[s].cards.push(card);
-      }
-    }
-
-    digimonSets = Object.entries(setMap)
-      .filter(([_, s]) => s.count >= 15)
-      .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 45)
-      .map(([name, info]) => ({
-        id: name,
-        name: name.replace(/^BT-\d+:\s*/, '').replace(/^EX-\d+:\s*/, '').replace(/^ST\d+:\s*/, '').replace(/^AD-\d+:\s*/, ''),
-        fullName: name,
-        printedTotal: info.count,
-        cards: info.cards
-      }));
-
-    document.getElementById('pikaLoading').style.display = 'none';
-    document.getElementById('homeContent').style.display = 'block';
-    renderDigimonSets();
-  } catch (err) {
-    document.getElementById('pikaLoading').innerHTML = `
-      <div class="digi-loading">
-        <div class="digi-track">
-          <div class="road"></div>
-          <div class="digi-runner">${gi('fox-head', 40)}</div>
-        </div>
-        <div class="pika-text" style="color:#a855f7"><img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" alt=""> ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
-        <div class="pika-sub" style="color:var(--muted)">Coba klik tombol di bawah</div>
-        <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid #a855f7;border-radius:10px;background:transparent;color:#a855f7;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit"><img src="https://api.iconify.design/game-icons/cycle.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> Coba Lagi</button>
-      </div>`;
-  }
-}
-
-function renderDigimonSets() {
-  const grid = document.getElementById('setsGrid');
-  const dgmColors = [
-    'linear-gradient(135deg,#7c3aed,#a855f7)',
-    'linear-gradient(135deg,#2563eb,#06b6d4)',
-    'linear-gradient(135deg,#dc2626,#f97316)',
-    'linear-gradient(135deg,#059669,#10b981)',
-    'linear-gradient(135deg,#9333ea,#ec4899)',
-    'linear-gradient(135deg,#d97706,#f59e0b)',
-    'linear-gradient(135deg,#374151,#6b7280)',
-    'linear-gradient(135deg,#0891b2,#06b6d4)',
-  ];
-
-  grid.innerHTML = digimonSets.map((s, i) => `
-    <div class="pack-card" onclick="openDigimonPack(${i})">
-      <div class="pack-img" style="background:${dgmColors[i % dgmColors.length]}">
-        ${gi('fox-head', 40)}
-      </div>
-      <div class="pack-name">${s.name}</div>
-      <div class="pack-series">Digimon Card Game</div>
-      <div class="pack-total"><img src="https://api.iconify.design/game-icons/stack.svg?height=10" class="gi" style="margin-right:2px" alt=""> ${s.printedTotal} kartu</div>
-    </div>
-  `).join('');}
-function initAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
-
-function playSound(type) {
-  try {
-    initAudio();
-    if (type === 'tear') {
-      const b = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.25, audioCtx.sampleRate);
-      const d = b.getChannelData(0);
-      for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.max(0,1-i/d.length*5);
-      const s = audioCtx.createBufferSource(); s.buffer = b;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.25, audioCtx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+0.25);
-      s.connect(g).connect(audioCtx.destination); s.start();
-    } else if (type === 'rare') {
-      [523,659,784,1047].forEach((f,i) => {
-        const b = audioCtx.createBuffer(1, audioCtx.sampleRate*0.12, audioCtx.sampleRate);
-        const d = b.getChannelData(0);
-        for (let j = 0; j < d.length; j++) d[j] = Math.sin(2*Math.PI*f*j/audioCtx.sampleRate)*Math.max(0,1-j/d.length);
-        const s = audioCtx.createBufferSource(); s.buffer = b;
-        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.18, audioCtx.currentTime+i*0.07);
-        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+i*0.07+0.12);
-        s.connect(g).connect(audioCtx.destination); s.start(audioCtx.currentTime+i*0.07);
-      });
-    } else if (type === 'common') {
-      const b = audioCtx.createBuffer(1, audioCtx.sampleRate*0.15, audioCtx.sampleRate);
-      const d = b.getChannelData(0);
-      for (let i = 0; i < d.length; i++) d[i] = Math.sin(2*Math.PI*200*i/audioCtx.sampleRate)*Math.max(0,1-i/d.length*2);
-      const s = audioCtx.createBufferSource(); s.buffer = b;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+0.15);
-      s.connect(g).connect(audioCtx.destination); s.start();
-    }
-  } catch (_) {}
-}
-
-// ======== CONFETTI ========
-function fireConfetti() {
-  try {
-    confetti({ particleCount: 70, spread: 60, origin: { y: 0.55 }, colors: ['#ffcb05','#ff6b35','#3b82f6','#22c55e'] });
-    setTimeout(() => confetti({ particleCount: 35, spread: 45, origin: { y: 0.5 }, colors: ['#ffcb05','#ef4444'] }), 180);
-  } catch (_) {}
-}
-
-// ======== JOKE ========
-async function showJoke() {
-  try {
-    const d = await fetchJSON(JOKE_API, 5000);
-    const t = document.getElementById('jokeToast');
-    t.innerHTML = '<img src="https://api.iconify.design/game-icons/sharp-smile.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> ' + (d.joke || '');
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 5000);
-  } catch (_) {}
-}
-
-// ======== NAVIGATION ========
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById('page' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
-  document.getElementById('nav' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
-  if (name === 'collection') renderCollection();
-}
-
-// ======== INIT ========
-async function init() {
-  const pikaText = document.querySelector('.pika-text');
-  const pikaSub = document.querySelector('.pika-sub');
-  const pikaImg = document.querySelector('.pika-track img');
-  loadCollection();
-  updateStats();
-
-  if (gameMode === 'digimon') {
-    if (pikaImg) {
-      pikaImg.src = 'https://digi-api.com/images/digimon/w/Agumon.png';
-      pikaImg.style.imageRendering = 'auto';
-    }
-    try {
-      await loadDigimonSets();
-    } catch (err) {
-      document.getElementById('pikaLoading').innerHTML = `
-        <div class="pika-track">
-          <div class="road"></div>
-          <img src="https://digi-api.com/images/digimon/w/Agumon.png" style="height:50px;image-rendering:auto">
-        </div>
-        <div class="pika-text" style="color:#ef4444"><img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" alt=""> ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
-        <div class="pika-sub" style="color:var(--muted)">Coba klik tombol di bawah</div>
-        <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid var(--pika);border-radius:10px;background:transparent;color:var(--pika);font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit"><img src="https://api.iconify.design/game-icons/cycle.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> Coba Lagi</button>
-      `;
-    }
-    return;
-  }
-
-  try {
-    pikaText.textContent = 'Menghubungi Pokémon TCG API...';
-    pikaSub.textContent = 'Pikachu lagi lari cari data kartu';
-    const data = await fetchJSON(TCG_API + '/sets?orderBy=-releaseDate&pageSize=40');
-    allSets = data.data;
-    renderSets(allSets);
-    document.getElementById('pikaLoading').style.display = 'none';
-    document.getElementById('homeContent').style.display = 'block';
-  } catch (err) {
-    document.getElementById('pikaLoading').innerHTML = `
-      <div class="pika-track">
-        <div class="road"></div>
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" style="height:50px">
-      </div>
-      <div class="pika-text" style="color:#ef4444"><img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" alt=""> ${err.name === 'AbortError' ? 'Koneksi timeout' : 'Gagal: '+err.message}</div>
-      <div class="pika-sub" style="color:var(--muted)">Coba klik tombol di bawah</div>
-      <button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid var(--pika);border-radius:10px;background:transparent;color:var(--pika);font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit"><img src="https://api.iconify.design/game-icons/cycle.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> Coba Lagi</button>
-    `;
-  }
-}
-
-function renderSets(sets) {
-  const grid = document.getElementById('setsGrid');
-  const colors = {
-    'Mega Evolution': 'linear-gradient(135deg,#7c3aed,#2563eb)',
-    'Sun & Moon': 'linear-gradient(135deg,#f59e0b,#ea580c)',
-    'Sword & Shield': 'linear-gradient(135deg,#3b82f6,#06b6d4)',
-    'Scarlet & Violet': 'linear-gradient(135deg,#ef4444,#ec4899)',
-    'Black & White': 'linear-gradient(135deg,#374151,#6b7280)',
-    'XY': 'linear-gradient(135deg,#8b5cf6,#a855f7)',
-    'HeartGold & SoulSilver': 'linear-gradient(135deg,#fbbf24,#b45309)',
-    'Diamond & Pearl': 'linear-gradient(135deg,#6366f1,#818cf8)',
-  };
-  const TYPE_ICON = (t) => `https://unpkg.com/@pokemonle/icons-svg@latest/icons/${t}.svg`;
-  grid.innerHTML = sets.map(s => {
-    const badgeColors = { 'Mega Evolution':'#7c3aed','Sun & Moon':'#f59e0b','Sword & Shield':'#3b82f6','Scarlet & Violet':'#ef4444','Black & White':'#374151','XY':'#8b5cf6','HeartGold & SoulSilver':'#fbbf24','Diamond & Pearl':'#6366f1' };
-    const c = badgeColors[s.series] || '#475569';
-    return `
-    <div class="pack-card" onclick="openPack('${s.id}')">
-      <div class="pack-img" style="background:${colors[s.series]||'linear-gradient(135deg,#1e293b,#475569)'}">
-        ${s.images?.logo ? `<img src="${s.images.logo}" alt="${s.name}" style="width:80%;height:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">` :
-        `<svg width="40" height="40" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="rgba(255,255,255,0.3)" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="${c}"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="rgba(255,255,255,0.3)" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="rgba(255,255,255,0.3)"/></svg>`}
-      </div>
-      <div class="pack-name">${s.name}</div>
-      <div class="pack-series">${s.series}</div>
-      <div class="pack-total"><img src="https://api.iconify.design/game-icons/stack.svg?height=10" class="gi" style="margin-right:2px" alt=""> ${s.printedTotal} kartu</div>
-    </div>
-  `}).join('');}
-// ======== UPDATE STATS ========
-function updateStats() {
-  const total = collection.length;
-  const unique = new Set(collection.map(c => c.id)).size;
-  const isRareFn = gameMode === 'digimon' ? isDigimonRare : isRare;
-  const rares = collection.filter(c => isRareFn(c.rarity)).length;
-  document.getElementById('statPacks').textContent = Math.ceil(total / 10) || 0;
-  document.getElementById('statCards').textContent = total;
-  document.getElementById('statRare').textContent = rares;
-  document.getElementById('collBadge').textContent = total;
-  document.getElementById('collTotal').textContent = total;
-  document.getElementById('collUnique').textContent = unique;
-  document.getElementById('collRare').textContent = rares;
-}
-
-// ======== PACK OPENING ========
-let isOpening = false;
-
-async function openPack(setId) {
-  if (isOpening) return;
-  isOpening = true;
-
-  const ov = document.getElementById('packOverlay');
-  const tc = document.getElementById('tearContainer');
-  const cr = document.getElementById('cardsReveal');
-  const tp = document.getElementById('tearPack');
-  const tt = document.getElementById('tearText');
-  const lb = document.getElementById('loadingBar');
-
-  ov.classList.add('active');
-  tc.style.display = 'flex'; cr.classList.remove('active');
-  tp.className = 'tear-pack'; tp.innerHTML = '<img src="https://api.iconify.design/game-icons/present.svg?height=48" class="gi" alt=""><div class="click-hint">Klik untuk robek!</div>';
-  tt.textContent = 'Klik pack untuk membuka';
-  lb.style.width = '0%'; lb.style.display = '';
-
-  const set = allSets.find(s => s.id === setId);
-  if (!set) { isOpening = false; return; }
-
-  // Step 1: Wait for click
-  await new Promise(resolve => {
-    tp.onclick = async function clickHandler() {
-      tp.onclick = null;
-      tp.innerHTML = '<img src="https://api.iconify.design/game-icons/present.svg?height=48" class="gi" alt="">';
-      tt.textContent = 'Mengambil data kartu...';
-      lb.style.width = '0%';
-
-      let p = 0;
-      const prog = setInterval(() => { p = Math.min(p + 3, 85); lb.style.width = p + '%'; }, 600);
-
-      try {
-        const data = await fetchJSON(TCG_API + `/cards?q=set.id:${setId}&pageSize=250`);
-        const cards = (data.data || []).sort(() => Math.random() - 0.5).slice(0, 10);
-        openedCards = cards;
-
-        clearInterval(prog); lb.style.width = '100%';
-        playSound('tear'); await delay(200);
-        tp.classList.add('tear-flash');
-        tt.innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Kartu-kartu muncul!';
-        lb.style.display = 'none';
-
-        const rareCount = openedCards.filter(c => isRare(c.rarity)).length;
-        if (rareCount > 0) setTimeout(() => { playSound('rare'); fireConfetti(); }, 700);
-
-        await delay(500);
-        tc.style.display = 'none'; cr.classList.add('active');
-
-        document.getElementById('revealSetName').innerHTML = `<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ${set.name}`;
-        document.getElementById('revealSetInfo').textContent = `${set.series} — ${openedCards.length} kartu`;
-
-        const grid = document.getElementById('cardsGrid');
-        grid.innerHTML = openedCards.map((c, i) => {
-          const r = (c.rarity || 'Common').replace(/\s+/g, '_');
-          const rn = c.rarity || 'Common';
-          const rare = isRare(c.rarity);
-          return `<div class="card-item rar-${r} ${rare?'rare-pulse':''}" style="transition-delay:${i*0.07}s" data-index="${i}" onclick="showDetail(${i})">
-            <img src="${c.images?.small||''}" alt="${c.name}" loading="lazy">
-            <div class="rarity-badge">${rare?'<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" style="margin-right:2px" alt="">':''}${rn}</div>
-            <div class="card-info">${c.name}${rare?' <img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt="">':''}</div>
-          </div>`;
-        }).join('');requestAnimationFrame(() => {
-          requestAnimationFrame(() => document.querySelectorAll('.card-item').forEach(el => el.classList.add('revealed')));
-        });
-
-        if (openedCards.every(c => !isRare(c.rarity))) {
-          playSound('common');
-          setTimeout(showJoke, 1200);
-        }
-
-        // Auto-save to collection
-        openedCards.forEach(c => {
-          collection.push({
-            id: c.id, name: c.name, rarity: c.rarity, supertype: c.supertype,
-            types: c.types, hp: c.hp, set: set.name, setId: set.id,
-            image: c.images?.small, imageLarge: c.images?.large,
-            tcgplayer: c.tcgplayer, openedAt: Date.now()
-          });
-        });
-        saveCollection();
-        updateStats();
-
-        resolve();
-      } catch (err) {
-        clearInterval(prog);
-        tt.innerHTML = err.name === 'AbortError' ? '<img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Timeout — coba lagi' : '<img src="https://api.iconify.design/game-icons/cancel.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ' + err.message;
-        await delay(1500); closePack(); resolve();
-      }
-    };
-  });
-  isOpening = false;
-}
-
-// ======== DIGIMON PACK OPENING ========
-async function openDigimonPack(index) {
-  if (isOpening) return;
-  isOpening = true;
-
-  const ov = document.getElementById('packOverlay');
-  const tc = document.getElementById('tearContainer');
-  const cr = document.getElementById('cardsReveal');
-  const tp = document.getElementById('tearPack');
-  const tt = document.getElementById('tearText');
-  const lb = document.getElementById('loadingBar');
-
-  ov.classList.add('active');
-  tc.style.display = 'flex'; cr.classList.remove('active');
-  tp.className = 'tear-pack';
-  tp.style.background = 'linear-gradient(145deg, #a855f7, #7c3aed)';
-  tp.style.boxShadow = '0 20px 60px rgba(168,85,247,0.3)';
-  tp.innerHTML = `${gi('fox-head', 48)}<div class="click-hint">Klik untuk robek!</div>`;
-  tt.textContent = 'Klik pack Digimon untuk membuka';
-  lb.style.width = '0%'; lb.style.display = '';
-
-  const pack = digimonSets[index];
-  if (!pack) { isOpening = false; return; }
-
-  await new Promise(resolve => {
-    tp.onclick = async function clickHandler() {
-      tp.onclick = null;
-      tp.innerHTML = `${gi('fox-head', 48)}`;
-      tt.textContent = 'Mengambil data kartu Digimon...';
-      lb.style.width = '0%';
-
-      let p = 0;
-      const prog = setInterval(() => { p = Math.min(p + 3, 85); lb.style.width = p + '%'; }, 600);
-
-      try {
-        const pool = pack.cards.sort(() => Math.random() - 0.5).slice(0, 10);
-        openedCards = pool;
-
-        clearInterval(prog); lb.style.width = '100%';
-        playSound('tear'); await delay(200);
-        tp.classList.add('tear-flash');
-        tt.innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Kartu Digimon muncul!';
-        lb.style.display = 'none';
-
-        const rareCount = openedCards.filter(c => isDigimonRare(c.rarity)).length;
-        if (rareCount > 0) setTimeout(() => { playSound('rare'); fireConfetti(); }, 700);
-
-        await delay(500);
-        tc.style.display = 'none'; cr.classList.add('active');
-
-        document.getElementById('revealSetName').innerHTML = `${gi('fox-head', 20)} ${pack.name}`;
-        document.getElementById('revealSetInfo').textContent = `Digimon TCG — ${openedCards.length} kartu`;
-
-        const grid = document.getElementById('cardsGrid');
-        grid.innerHTML = openedCards.map((c, i) => {
-          const r = (c.rarity || 'Common').replace(/\s+/g, '_');
-          const rare = isDigimonRare(c.rarity);
-          return `<div class="card-item rar-${r} ${rare?'rare-pulse':''}" style="transition-delay:${i*0.07}s" data-index="${i}" onclick="showDigimonDetail(${i})">
-            <img src="${DIGIMON_IMG}/${c.id}" alt="${c.name}" loading="lazy" onerror="digiError(this)">
-            <div class="rarity-badge">${rare?'<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" style="margin-right:2px" alt="">':''}${c.rarity||'Common'}</div>
-            <div class="card-info">${c.name}${rare?' <img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt="">':''}</div>
-          </div>`;
-        }).join('');requestAnimationFrame(() => {
-          requestAnimationFrame(() => document.querySelectorAll('.card-item').forEach(el => el.classList.add('revealed')));
-        });
-
-        if (openedCards.every(c => !isDigimonRare(c.rarity))) {
-          playSound('common');
-        }
-
-        openedCards.forEach(c => {
-          collection.push({
-            id: c.id, name: c.name, rarity: c.rarity, supertype: c.type,
-            types: [c.color].filter(Boolean), hp: c.dp || c.level,
-            set: pack.name, setId: pack.fullName,
-            image: `${DIGIMON_IMG}/${c.id}`,
-            imageLarge: `${DIGIMON_IMG}/${c.id}`,
-            stage: c.stage || '',
-            attribute: c.attribute || '',
-            color: c.color || '',
-            digiType: c.digi_type || '',
-            level: c.level || '',
-            effect: c.main_effect || '',
-            openedAt: Date.now()
-          });
-        });
-        saveCollection();
-        updateStats();
-
-        resolve();
-      } catch (err) {
-        clearInterval(prog);
-        tt.innerHTML = err.name === 'AbortError' ? '<img src="https://api.iconify.design/game-icons/alarm-clock.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Timeout — coba lagi' : '<img src="https://api.iconify.design/game-icons/cancel.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ' + err.message;
-        await delay(1500); closePack(); resolve();
-      }
-    };
-  });
-  isOpening = false;
-}
-
-// ======== DIGIMON DETAIL ========
-function showDigimonDetail(index) {
-  const c = openedCards[index];
-  if (!c) return;
-  const ov = document.getElementById('detailOverlay');
-
-  const fb = document.getElementById('detailImgFallback');
-  if (fb) fb.remove();
-  document.getElementById('detailImg').src = `${DIGIMON_IMG}/${c.id}`;
-  document.getElementById('detailImg').onerror = function() {
-    this.style.display = 'none';
-    let fb = document.getElementById('detailImgFallback');
-    if (!fb) {
-      fb = document.createElement('div');
-      fb.id = 'detailImgFallback';
-      fb.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:200px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:12px;font-size:1.5rem;text-align:center;padding:20px;flex-direction:column;margin-bottom:12px';
-      this.parentElement.insertBefore(fb, this.nextSibling);
-    }
-    fb.innerHTML = '<img src="https://api.iconify.design/game-icons/card-random.svg?height=48" style="width:48px;height:48px;display:block;margin:0 auto 8px" alt=""><span>' + (c?.name || 'Digimon') + '</span>';
-  };
-  document.getElementById('detailName').textContent = `${c.name} — ${c.type || 'Digimon'}`;
-  document.getElementById('detailSub').textContent = [c.rarity, c.color, c.stage, c.level ? `Lv.${c.level}` : '', c.dp ? `DP ${c.dp}` : ''].filter(Boolean).join(' | ');
-  document.getElementById('detailPrice').textContent = '';
-  document.getElementById('translationResult').textContent = '';
-  document.getElementById('translateBtn').style.display = 'none';
-  document.getElementById('shareBtn').style.display = 'inline-block';
-  document.getElementById('deleteBtn').style.display = 'none';
-
-  const colorBadge = c.color ? `<span class="digi-badge digi-${c.color}">${c.color}</span>` : '';
-
-  document.getElementById('pokeInfo').innerHTML = `
-    <div class="digi-detail-box">
-      ${colorBadge ? `<div style="margin-bottom:6px">${colorBadge}</div>` : ''}
-      <div class="digi-row"><span class="digi-label">Jenis</span><span class="digi-value">${c.type || '-'}</span></div>
-      ${c.stage ? `<div class="digi-row"><span class="digi-label">Stage</span><span class="digi-value">${c.stage}</span></div>` : ''}
-      ${c.level ? `<div class="digi-row"><span class="digi-label">Level</span><span class="digi-value">${c.level}</span></div>` : ''}
-      ${c.dp ? `<div class="digi-row"><span class="digi-label">DP</span><span class="digi-value">${c.dp}</span></div>` : ''}
-      ${c.play_cost ? `<div class="digi-row"><span class="digi-label">Play Cost</span><span class="digi-value">${c.play_cost}</span></div>` : ''}
-      ${c.attribute ? `<div class="digi-row"><span class="digi-label">Attribute</span><span class="digi-value">${c.attribute}</span></div>` : ''}
-      ${c.digi_type ? `<div class="digi-row"><span class="digi-label">Digi-Type</span><span class="digi-value">${c.digi_type}</span></div>` : ''}
-      ${c.evolution_cost !== undefined && c.evolution_cost !== null ? `<div class="digi-row"><span class="digi-label">Evo Cost</span><span class="digi-value">${c.evolution_cost}</span></div>` : ''}
-      ${c.evolution_color ? `<div class="digi-row"><span class="digi-label">Evo Color</span><span class="digi-value"><span class="digi-badge digi-${c.evolution_color}">${c.evolution_color}</span></span></div>` : ''}
-      ${c.main_effect ? `<div class="digi-effect"><img src="https://api.iconify.design/game-icons/tied-scroll.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ${c.main_effect}</div>` : ''}
-    </div>`;
-
-  ov.classList.add('active');
-}
-
-function closePack() {
-  document.getElementById('packOverlay').classList.remove('active');
-  document.getElementById('tearContainer').style.display = 'flex';
-  document.getElementById('cardsReveal').classList.remove('active');
-}
-
-// ======== CARD DETAIL ========
-async function showDetail(index) {
-  const c = openedCards[index];
-  if (!c) return;
-  const ov = document.getElementById('detailOverlay');
-
-  document.getElementById('detailImg').src = c.images?.large || c.images?.small || '';
-  document.getElementById('detailName').textContent = `${c.name} — ${c.supertype || ''}`;
-  const types = (c.types || []).join(', ');
-  document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types].filter(Boolean).join(' | ');
-  const pr = c.tcgplayer?.prices;
-  const keys = pr ? Object.keys(pr) : [];
-  document.getElementById('detailPrice').innerHTML = keys.length ? `<img src="https://api.iconify.design/game-icons/crown-coin.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Market: $${(pr[keys[0]].market||0).toFixed(2)}` : '';
-  document.getElementById('translationResult').textContent = '';
-  document.getElementById('pokeInfo').innerHTML = '<div style="font-size:0.8rem;color:var(--muted)"><img src="https://api.iconify.design/game-icons/magnifying-glass.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> Mencari data Pokémon...</div>';
-
-  currentPokeName = c.name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\s+/g, '-');
-  if (currentPokeName.startsWith('mega')) currentPokeName = currentPokeName.replace('mega', '');
-  if (currentPokeName.endsWith('ex')) currentPokeName = currentPokeName.slice(0, -2).trim();
-
-  const fix = {
-    'vileplume':'vileplume','heracross':'heracross','pikachu':'pikachu','charizard':'charizard',
-    'blastoise':'blastoise','venusaur':'venusaur','mewtwo':'mewtwo','mew':'mew',
-    'gyarados':'gyarados','eevee':'eevee','snorlax':'snorlax','dragonite':'dragonite',
-    'gengar':'gengar','arcanine':'arcanine','alakazam':'alakazam','machamp':'machamp',
-    'golem':'golem','kangaskhan':'kangaskhan','scyther':'scyther','pinsir':'pinsir',
-    'tauros':'tauros','ditto':'ditto','omanyte':'omanyte','omastar':'omastar',
-    'kabuto':'kabuto','kabutops':'kabutops','aerodactyl':'aerodactyl','articuno':'articuno',
-    'zapdos':'zapdos','moltres':'moltres','dratini':'dratini','oddish':'oddish',
-    'gloom':'gloom','lotad':'lotad','lombre':'lombre','ludicolo':'ludicolo',
-    'ralts':'ralts','kirlia':'kirlia','gardevoir':'gardevoir','bagon':'bagon',
-    'shelgon':'shelgon','salamence':'salamence','beldum':'beldum','metang':'metang',
-    'metagross':'metagross','gible':'gible','gabite':'gabite','garchomp':'garchomp',
-    'riolu':'riolu','lucario':'lucario','absol':'absol','sneasel':'sneasel',
-    'weavile':'weavile','umbreon':'umbreon','espeon':'espeon','leafeon':'leafeon',
-    'glaceon':'glaceon','sylveon':'sylveon','jolteon':'jolteon','flareon':'flareon',
-    'vaporeon':'vaporeon','honedge':'honedge','doublade':'doublade','aegislash':'aegislash',
-  };
-
-  let pokeName = fix[currentPokeName] || currentPokeName;
-
-  try {
-    const pd = await fetchJSON(`${POKE_API}/pokemon/${pokeName}`, 7000);
-    const sp = await fetchJSON(`${POKE_API}/pokemon-species/${pd.id}`, 7000);
-
-    const typesHtml = pd.types.map(t =>
-      `<span class="type-badge type-${t.type.name.charAt(0).toUpperCase()+t.type.name.slice(1)}"><img class="type-icon-img" src="${TYPE_ICONS}/${t.type.name}.svg" alt="">${t.type.name}</span>`
-    ).join('');
-
-    const stats = {};
-    pd.stats.forEach(s => stats[s.stat.name] = s.base_stat);
-    const total = pd.stats.reduce((a, s) => a + s.base_stat, 0);
-    const sprite = pd.sprites?.other?.['official-artwork']?.front_default || pd.sprites?.front_default || '';
-
-    let evoHtml = '';
-    try {
-      const evoUrl = sp.evolution_chain?.url;
-      if (evoUrl) {
-        const evo = await fetchJSON(evoUrl, 5000);
-        const list = [];
-        let chain = evo.chain;
-        while (chain) { list.push(chain.species.name); chain = chain.evolves_to?.[0] || null; }
-        const items = await Promise.all(list.map(async (n, i) => {
-          const id = await getPokeId(n);
-          const img = id ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png` : '';
-          return (i > 0 ? '<span class="evo-arrow"><img src="https://api.iconify.design/game-icons/arrowhead.svg?height=12" class="gi ic-sm" alt=""></span>' : '') +
-            `<div class="evo-item"><img src="${img}" onerror="this.style.display='none'"><span>${n.charAt(0).toUpperCase()+n.slice(1)}</span></div>`;
-        }));
-        evoHtml = `<div class="evo-row">${items.join('')}</div>`;
-      }
-    } catch (_) {}
-
-    document.getElementById('pokeInfo').innerHTML = `
-      <div class="poke-box">
-        <div class="poke-head">
-          ${sprite ? `<img src="${sprite}">` : ''}
-          <div><div class="pn">${sp.name.charAt(0).toUpperCase()+sp.name.slice(1)}</div><div class="pid">#${String(pd.id).padStart(4,'0')}</div></div>
-        </div>
-        <div>${typesHtml}</div>
-        <div class="stat-grid">
-          <div class="s-item"><div class="s-val">${stats.hp||0}</div><div class="s-lbl">HP</div></div>
-          <div class="s-item"><div class="s-val">${stats.attack||0}</div><div class="s-lbl">ATK</div></div>
-          <div class="s-item"><div class="s-val">${stats.defense||0}</div><div class="s-lbl">DEF</div></div>
-          <div class="s-item"><div class="s-val">${stats['special-attack']||0}</div><div class="s-lbl">SPATK</div></div>
-          <div class="s-item"><div class="s-val">${stats['special-defense']||0}</div><div class="s-lbl">SPDEF</div></div>
-        </div>
-        <div style="text-align:center;margin-top:5px;font-size:0.7rem;color:var(--muted)">Total Base Stats: ${total}</div>
-        ${evoHtml}
-      </div>`;
-  } catch (_) { document.getElementById('pokeInfo').innerHTML = ''; }
-
-  ov.classList.add('active');
-}
-
-async function getPokeId(name) {
-  if (pokeIdCache[name]) return pokeIdCache[name];
-  try { const d = await fetchJSON(`${POKE_API}/pokemon/${name}`, 3000); pokeIdCache[name] = d.id; return d.id; }
-  catch { return null; }
-}
-
-// ======== FUNTRANSLATIONS ========
-async function translateCard() {
-  const name = document.getElementById('detailName')?.textContent?.split('—')[0]?.trim();
-  if (!name) return;
-  const el = document.getElementById('translationResult');
-  el.textContent = 'Menerjemahkan...';
-  try {
-    const d = await fetchJSON(`${FUNTRANS_API}/yoda.json`, 6000, {
-      method: 'POST', body: new URLSearchParams({ text: name }),
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    });
-    el.textContent = '"' + (d.contents?.translated || name) + '"';
-  } catch { el.innerHTML = '<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" alt=""> ' + name.split('').reverse().join('') + ' <img src="https://api.iconify.design/game-icons/star-cycle.svg?height=14" class="gi ic-inline" alt="">'; }
-}
-
-// ======== COLLECTION PAGE ========
-function renderCollection() {
-  const grid = document.getElementById('collGrid');
-  const empty = document.getElementById('collEmpty');
-  loadCollection();
-
-  const q = document.getElementById('collSearch').value.toLowerCase();
-  const f = document.getElementById('collFilter').value;
-
-  let filtered = collection;
-  if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
-  if (f !== 'all') filtered = filtered.filter(c => {
-    if (f === 'Rare') return gameMode === 'pokemon' ? isRare(c.rarity) : isDigimonRare(c.rarity);
-    if (f === 'Ultra') return (c.rarity||'').includes('Ultra');
-    if (f === 'Secret') return (c.rarity||'').includes('Secret');
-    if (f === 'Super Rare') return (c.rarity||'') === 'Super Rare';
-    return (c.rarity||'') === f;
-  });
-
-  // Show newest first
-  filtered = filtered.reverse();
-
-  if (filtered.length === 0) {
-    grid.innerHTML = '';
-    empty.style.display = 'block';
-    return;
-  }
-  empty.style.display = 'none';
-
-  grid.innerHTML = filtered.map((c, i) => {
-    const r = (c.rarity || 'Common').replace(/\s+/g, '_');
-    const isRareFn = gameMode === 'digimon' ? isDigimonRare : isRare;
-    const rare = isRareFn(c.rarity);
-    return `<div class="card-item rar-${r}" style="transition-delay:${Math.min(i,20)*0.03}s" onclick="showCollectionDetail(${i})">
-      <img src="${c.image||''}" alt="${c.name}" loading="lazy" onerror="digiError(this)">
-      <div class="rarity-badge">${rare?'<img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" style="margin-right:2px" alt="">':''}${c.rarity||'Common'}</div>
-      <div class="card-info">${c.name}${rare?' <img src="https://api.iconify.design/game-icons/star-cycle.svg?height=10" class="gi" alt="">':''} · ${c.set||''}</div>
-    </div>`;
-  }).join('');
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => document.querySelectorAll('#collGrid .card-item').forEach(el => el.classList.add('revealed')));
-  });}
-
-function getFilteredCollection() {
-  const q = document.getElementById('collSearch').value.toLowerCase();
-  const f = document.getElementById('collFilter').value;
-  let filtered = [...collection];
-  if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
-  if (f !== 'all') {
-    if (f === 'Rare') filtered = filtered.filter(c => gameMode === 'pokemon' ? isRare(c.rarity) : isDigimonRare(c.rarity));
-    else if (f === 'Ultra') filtered = filtered.filter(c => (c.rarity||'').includes('Ultra'));
-    else if (f === 'Secret') filtered = filtered.filter(c => (c.rarity||'').includes('Secret'));
-    else if (f === 'Super Rare') filtered = filtered.filter(c => (c.rarity||'') === 'Super Rare');
-    else filtered = filtered.filter(c => (c.rarity||'') === f);
-  }
-  return filtered.reverse();
-}
-
-// ======== DELETE CARD ========
-let deleteTargetIndex = -1;
-
-function showCollectionDetail(index) {
-  loadCollection();
-  const filtered = getFilteredCollection();
-  const c = filtered[index];
-  if (!c) return;
-  deleteTargetIndex = index;
-  const ov = document.getElementById('detailOverlay');
-
-  const fb = document.getElementById('detailImgFallback');
-  if (fb) fb.remove();
-  const img = document.getElementById('detailImg');
-  img.src = c.imageLarge || c.image || '';
-  img.style.display = '';
-  img.onerror = function() {
-    this.style.display = 'none';
-    let fb = document.getElementById('detailImgFallback');
-    if (!fb) {
-      fb = document.createElement('div');
-      fb.id = 'detailImgFallback';
-      fb.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:200px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:12px;font-size:1.5rem;text-align:center;padding:20px;flex-direction:column;margin-bottom:12px';
-      this.parentElement.insertBefore(fb, this.nextSibling);
-    }
-    fb.innerHTML = '<img src="https://api.iconify.design/game-icons/card-random.svg?height=48" style="width:48px;height:48px;display:block;margin:0 auto 8px" alt=""><span>' + (this.alt || c.name || 'Digimon') + '</span>';
-  };
-  document.getElementById('detailName').textContent = `${c.name} — ${c.supertype || ''}`;
-  const types = (c.types || []).join(', ');
-  document.getElementById('detailSub').textContent = [c.rarity, c.hp ? `HP ${c.hp}` : '', types, c.set||''].filter(Boolean).join(' | ');
-  document.getElementById('detailPrice').textContent = '';
-  document.getElementById('translationResult').textContent = '';
-
-  if (gameMode === 'digimon' && c.color) {
-    document.getElementById('translateBtn').style.display = 'none';
-    const colorBadge = c.color ? `<span class="digi-badge digi-${c.color}">${c.color}</span>` : '';
-    document.getElementById('pokeInfo').innerHTML = `
-      <div class="digi-detail-box">
-        ${colorBadge ? `<div style="margin-bottom:6px">${colorBadge}</div>` : ''}
-        ${c.stage ? `<div class="digi-row"><span class="digi-label">Stage</span><span class="digi-value">${c.stage}</span></div>` : ''}
-        ${c.level ? `<div class="digi-row"><span class="digi-label">Level</span><span class="digi-value">${c.level}</span></div>` : ''}
-        ${c.dp ? `<div class="digi-row"><span class="digi-label">DP</span><span class="digi-value">${c.dp}</span></div>` : ''}
-        ${c.attribute ? `<div class="digi-row"><span class="digi-label">Attribute</span><span class="digi-value">${c.attribute}</span></div>` : ''}
-        ${c.digiType ? `<div class="digi-row"><span class="digi-label">Digi-Type</span><span class="digi-value">${c.digiType}</span></div>` : ''}
-        ${c.effect ? `<div class="digi-effect"><img src="https://api.iconify.design/game-icons/tied-scroll.svg?height=14" class="gi ic-inline" style="margin-right:2px" alt=""> ${c.effect}</div>` : ''}
-        <div class="digi-row"><span class="digi-label">Set</span><span class="digi-value">${c.set||''}</span></div>
-      </div>`;
-  } else {
-    document.getElementById('translateBtn').style.display = 'inline-block';
-    document.getElementById('pokeInfo').innerHTML = '';
-  }
-
-  document.getElementById('shareBtn').style.display = 'inline-block';
-  document.getElementById('deleteBtn').style.display = 'inline-block';
-
-  currentPokeName = c.name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/\s+/g, '-');
-  ov.classList.add('active');
-}
-
-function deleteCard() {
-  loadCollection();
-  const filtered = getFilteredCollection();
-  if (deleteTargetIndex < 0 || deleteTargetIndex >= filtered.length) return;
-  const target = filtered[deleteTargetIndex];
-  const idx = collection.findIndex(c => c.id === target.id && c.openedAt === target.openedAt);
-  if (idx > -1) {
-    collection.splice(idx, 1);
-    saveCollection();
-    updateStats();
-    renderCollection();
-  }
-  document.getElementById('detailOverlay').classList.remove('active');
-  fireConfetti();
-}
-
-function clearAll() {
-  if (collection.length === 0) return;
-  if (!confirm('Hapus SEMUA koleksi? Data gak bisa dikembalikan!')) return;
-  collection = [];
-  saveCollection();
-  updateStats();
-  renderCollection();
-  fireConfetti();
-}
-
-// ======== SHARE ========
-function shareCard() {
-  const name = document.getElementById('detailName')?.textContent?.split('—')[0]?.trim();
-  const rarity = document.getElementById('detailSub')?.textContent?.split('|')[0]?.trim();
-  const img = document.getElementById('detailImg')?.src;
-  if (!name) return;
-  const text = `🔥 BREWEK POKÉMON KUY!\nDapet ${name} (${rarity || 'Common'})!\nBuka pack juga di: https://pokemon-pack-sim-one.vercel.app`;
-  if (navigator.share) {
-    navigator.share({ title: 'brewek Pokémon kuy', text, url: 'https://pokemon-pack-sim-one.vercel.app' }).catch(() => {});
-  } else {
-    navigator.clipboard?.writeText(text).then(() => {
-      const t = document.getElementById('jokeToast');
-      t.innerHTML = '<img src="https://api.iconify.design/game-icons/paper.svg?height=14" class="gi ic-inline" style="margin-right:3px" alt=""> Teks berhasil disalin!';
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }).catch(() => {});
-  }
-}
-
+// ===== CONFIG =====
+const TCG_API='https://api.pokemontcg.io/v2',POKE_API='https://pokeapi.co/api/v2',FUNTRANS_API='https://api.funtranslations.com/translate',JOKE_API='https://v2.jokeapi.dev/joke/Any?type=single&safe-mode',TIMEOUT=25000,STORAGE_KEY='brewek_koleksi',COIN_KEY='brewek_coins',STREAK_KEY='brewek_streak',HISTORY_KEY='brewek_history',LUCKY_KEY='brewek_lucky_count',TYPE_ICONS='https://unpkg.com/@pokemonle/icons-svg@latest/icons',DIGIMON_API='https://digimoncard.io/api-public',DIGIMON_IMG='https://images.digimoncard.io/img/cards',DIGIMON_STORAGE='digimon_koleksi',DIGIMON_HISTORY='digimon_history',LUCKY_THRESHOLD=10,PACK_COSTS={1:0,3:50,5:80};
+let gameMode='pokemon',allSets=[],digimonSets=[],digimonAllCards=[],openedCards=[],collection=[],audioCtx=null,currentPokeName='',packCount=1,coins=0,soundEnabled=true,luckyCount=0,pullHistory=[],isOpening=false,deleteTargetIndex=-1;
+const pokeIdCache={};
+// ===== PARTICLES =====
+(function(){const c=document.getElementById('particleCanvas'),x=c.getContext('2d');let ps=[];function r(){c.width=innerWidth;c.height=innerHeight}r();addEventListener('resize',r);class P{constructor(){this.reset()}reset(){this.x=Math.random()*c.width;this.y=Math.random()*c.height;this.s=Math.random()*3+1;this.vx=(Math.random()-.5)*.3;this.vy=(Math.random()-.5)*.3;this.o=Math.random()*.15+.03;this.h=Math.random()*60+30}update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>c.width||this.y<0||this.y>c.height)this.reset()}draw(){x.beginPath();x.arc(this.x,this.y,this.s,0,Math.PI*2);x.fillStyle=`hsla(${this.h},80%,60%,${this.o})`;x.fill()}}for(let i=0;i<60;i++)ps.push(new P());(function a(){x.clearRect(0,0,c.width,c.height);const d=document.body.classList.contains('mode-digimon');ps.forEach(p=>{if(d)p.h=260+Math.random()*60;else p.h=30+Math.random()*60;p.update();p.draw()});requestAnimationFrame(a)})()})();
+// ===== SCROLL & SOUND =====
+addEventListener('scroll',()=>document.getElementById('scrollTop').classList.toggle('show',scrollY>300));
+function toggleSound(){soundEnabled=!soundEnabled;const b=document.getElementById('soundToggle');b.textContent=soundEnabled?'🔊':'🔇';b.classList.toggle('muted',!soundEnabled)}
+// ===== COINS =====
+function loadCoins(){try{coins=parseInt(localStorage.getItem(COIN_KEY))||0}catch{coins=0}updateCoinDisplay()}
+function saveCoins(){localStorage.setItem(COIN_KEY,coins);updateCoinDisplay()}
+function addCoins(n){coins+=n;saveCoins();const e=document.querySelector('.coin-display');e.classList.add('coin-add');setTimeout(()=>e.classList.remove('coin-add'),500);playSound('coin')}
+function spendCoins(n){if(coins<n)return false;coins-=n;saveCoins();return true}
+function updateCoinDisplay(){document.getElementById('coinDisplay').textContent=coins}
+// ===== DAILY =====
+function checkDaily(){const t=new Date().toDateString();let s={};try{s=JSON.parse(localStorage.getItem(STREAK_KEY))||{}}catch{s={}}const lc=s.lastClaim||'',cnt=s.count||0;if(lc===t){document.getElementById('dailyBanner').classList.add('show');document.getElementById('streakCount').textContent='🔥 '+cnt;document.getElementById('dailyReward').textContent='Sudah diklaim hari ini!';document.getElementById('claimBtn').disabled=true;document.getElementById('claimBtn').textContent='✓ Diklaim'}else{const y=new Date(Date.now()-864e5).toDateString();const nc=lc===y?cnt+1:1;document.getElementById('dailyBanner').classList.add('show');document.getElementById('streakCount').textContent='🔥 '+nc;const rw=Math.min(50+(nc-1)*10,200);document.getElementById('dailyReward').textContent='+'+rw+' koin hadiah harian!';document.getElementById('claimBtn').disabled=false;document.getElementById('claimBtn').textContent='Klaim Hadiah'}}
+function claimDaily(){const t=new Date().toDateString();let s={};try{s=JSON.parse(localStorage.getItem(STREAK_KEY))||{}}catch{s={}}if(s.lastClaim===t)return;const y=new Date(Date.now()-864e5).toDateString();const cnt=s.lastClaim===y?(s.count||0)+1:1;const rw=Math.min(50+(cnt-1)*10,200);localStorage.setItem(STREAK_KEY,JSON.stringify({lastClaim:t,count:cnt}));addCoins(rw);fireConfetti();document.getElementById('dailyReward').textContent='+'+rw+' koin diklaim! 🎉';document.getElementById('claimBtn').disabled=true;document.getElementById('claimBtn').textContent='✓ Diklaim';document.getElementById('streakCount').textContent='🔥 '+cnt;checkDaily()}
+// ===== LUCKY =====
+function loadLucky(){try{luckyCount=parseInt(localStorage.getItem(LUCKY_KEY))||0}catch{luckyCount=0}updateLuckyBar()}
+function saveLucky(){localStorage.setItem(LUCKY_KEY,luckyCount);updateLuckyBar()}
+function incrementLucky(){luckyCount++;if(luckyCount>=LUCKY_THRESHOLD)luckyCount=0;saveLucky()}
+function updateLuckyBar(){const p=(luckyCount/LUCKY_THRESHOLD)*100;document.getElementById('luckyFill').style.width=p+'%';document.getElementById('luckyCount').textContent=luckyCount+'/'+LUCKY_THRESHOLD}
+function isLuckyPack(){return luckyCount===0&&collection.length>0}
+// ===== HISTORY =====
+function getHistoryKey(){return gameMode==='pokemon'?HISTORY_KEY:DIGIMON_HISTORY}
+function loadHistory(){try{pullHistory=JSON.parse(localStorage.getItem(getHistoryKey())||'[]')}catch{pullHistory=[]}}
+function saveHistory(){localStorage.setItem(getHistoryKey(),JSON.stringify(pullHistory))}
+function addHistory(cards,setName){cards.forEach(c=>{pullHistory.unshift({name:c.name,rarity:c.rarity||'Common',image:c.image||c.images?.small||'',set:setName,time:Date.now()})});if(pullHistory.length>200)pullHistory=pullHistory.slice(0,200);saveHistory()}
+// ===== HELPERS =====
+function gi(icon,size=16){return`<img class="gi" src="https://api.iconify.design/game-icons/${icon}.svg?height=${size}" style="width:${size}px;height:${size}px" alt="">`}
+function digiError(el){const d=document.createElement('div');d.style.cssText='display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);font-size:1.5rem;text-align:center;padding:10px;word-break:break-word;flex-direction:column';d.innerHTML='<img src="https://api.iconify.design/game-icons/card-random.svg?height=32" style="width:32px;height:32px;display:block;margin:0 auto 4px" alt=""><span>'+(el.alt||'Digimon')+'</span>';el.replaceWith(d)}
+function fetchJSON(url,timeout=TIMEOUT){const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),timeout);return fetch(url,{signal:ctrl.signal}).then(r=>{clearTimeout(timer);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}).catch(e=>{clearTimeout(timer);throw e})}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+function getStorageKey(){return gameMode==='pokemon'?STORAGE_KEY:DIGIMON_STORAGE}
+function loadCollection(){try{collection=JSON.parse(localStorage.getItem(getStorageKey())||'[]')}catch{collection=[]}}
+function saveCollection(){localStorage.setItem(getStorageKey(),JSON.stringify(collection))}
+function isRare(r){if(!r)return false;return/Rare|Ultra|Secret|Shiny/i.test(r)}
+function isDigimonRare(r){if(!r)return false;return['rare','super','secret','alt art','promo'].some(s=>(r+'').toLowerCase().includes(s))}
+// ===== PACK SELECTOR =====
+function setPackCount(n){packCount=n;document.querySelectorAll('.pack-selector button').forEach(b=>b.classList.remove('active'));event.target.closest('button').classList.add('active')}
+// ===== EXPORT/IMPORT =====
+function exportCollection(){if(!collection.length){showToast('Koleksi masih kosong!');return}const d=JSON.stringify(collection,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`brewek-${gameMode}-${Date.now()}.json`;a.click();URL.revokeObjectURL(u);showToast('Koleksi berhasil di-export! 📦')}
+function importCollection(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{const imp=JSON.parse(e.target.result);if(!Array.isArray(imp))throw 0;collection=collection.concat(imp);saveCollection();updateStats();renderCollection();showToast(imp.length+' kartu berhasil di-import! 🎉');fireConfetti()}catch{showToast('File JSON tidak valid! ❌')}};r.readAsText(f);ev.target.value=''}
+function showToast(msg){const t=document.getElementById('jokeToast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500)}
+// ===== AUDIO =====
+function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+function playSound(type){if(!soundEnabled)return;try{initAudio();if(type==='tear'){const b=audioCtx.createBuffer(1,audioCtx.sampleRate*.25,audioCtx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.max(0,1-i/d.length*5);const s=audioCtx.createBufferSource();s.buffer=b;const g=audioCtx.createGain();g.gain.setValueAtTime(.25,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.25);s.connect(g).connect(audioCtx.destination);s.start()}else if(type==='rare'){[523,659,784,1047].forEach((f,i)=>{const b=audioCtx.createBuffer(1,audioCtx.sampleRate*.12,audioCtx.sampleRate),d=b.getChannelData(0);for(let j=0;j<d.length;j++)d[j]=Math.sin(2*Math.PI*f*j/audioCtx.sampleRate)*Math.max(0,1-j/d.length);const s=audioCtx.createBufferSource();s.buffer=b;const g=audioCtx.createGain();g.gain.setValueAtTime(.18,audioCtx.currentTime+i*.07);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+i*.07+.12);s.connect(g).connect(audioCtx.destination);s.start(audioCtx.currentTime+i*.07)})}else if(type==='common'){const b=audioCtx.createBuffer(1,audioCtx.sampleRate*.15,audioCtx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.sin(2*Math.PI*200*i/audioCtx.sampleRate)*Math.max(0,1-i/d.length*2);const s=audioCtx.createBufferSource();s.buffer=b;const g=audioCtx.createGain();g.gain.setValueAtTime(.12,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.15);s.connect(g).connect(audioCtx.destination);s.start()}else if(type==='coin'){const b=audioCtx.createBuffer(1,audioCtx.sampleRate*.1,audioCtx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.sin(2*Math.PI*880*i/audioCtx.sampleRate)*Math.max(0,1-i/d.length*3);const s=audioCtx.createBufferSource();s.buffer=b;const g=audioCtx.createGain();g.gain.setValueAtTime(.15,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.1);s.connect(g).connect(audioCtx.destination);s.start()}}catch(_){}}
+function fireConfetti(){try{confetti({particleCount:70,spread:60,origin:{y:.55},colors:['#ffcb05','#ff6b35','#3b82f6','#22c55e']});setTimeout(()=>confetti({particleCount:35,spread:45,origin:{y:.5},colors:['#ffcb05','#ef4444']}),180)}catch(_){}}
+async function showJoke(){try{const d=await fetchJSON(JOKE_API,5000);showToast('😄 '+(d.joke||'Pack berikutnya pasti dapet rare!'))}catch{showToast('😄 Pack berikutnya pasti dapet rare!')}}
+// ===== NAV =====
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById('page'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');document.getElementById('nav'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');if(name==='collection')renderCollection();if(name==='history')renderHistory();if(name==='stats')renderStats()}
+// ===== MODE SWITCH =====
+async function switchMode(mode){if(mode===gameMode)return;document.getElementById('packOverlay').classList.remove('active');document.getElementById('detailOverlay').classList.remove('active');isOpening=false;gameMode=mode;document.body.classList.toggle('mode-digimon',mode==='digimon');document.getElementById('modePkm').className=mode==='pokemon'?'active-pkm':'';document.getElementById('modeDgm').className=mode==='digimon'?'active-dgm':'';
+if(mode==='digimon'){document.getElementById('titleIcon').innerHTML='<svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#a855f7" stroke="#9333ea" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="#7c3aed"/><circle cx="128" cy="128" r="36" fill="#a855f7" stroke="#9333ea" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="#9333ea"/><text x="128" y="138" text-anchor="middle" font-size="80" fill="#fff" font-weight="bold">D</text></svg>';document.getElementById('titleText').textContent='BREWEK DIGIMON KUY';document.getElementById('subText').innerHTML=gi('star-cycle',14)+' Buka pack Digimon, kumpulin karti Digimon!';document.getElementById('pokeInfo').innerHTML='';document.getElementById('collFilter').innerHTML='<option value="all">Semua</option><option value="Rare">Rare \u2728</option><option value="Super Rare">Super Rare</option><option value="Secret Rare">Secret Rare</option><option value="Common">Common</option><option value="Uncommon">Uncommon</option>'}else{document.getElementById('titleIcon').innerHTML='<svg style="width:28px;height:28px;vertical-align:middle;margin-right:4px" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="#333" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="#e3350d"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="#333" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="#333"/></svg>';document.getElementById('titleText').textContent='BREWEK POK\u00c9MON KUY';document.getElementById('subText').innerHTML=gi('star-cycle',14)+' Buka pack, kumpulin, pamerin ke temen-temen!';document.getElementById('collFilter').innerHTML='<option value="all">Semua</option><option value="Rare">Rare \u2728</option><option value="Ultra">Ultra Rare</option><option value="Secret">Secret Rare</option><option value="Common">Common</option><option value="Uncommon">Uncommon</option>'}
+loadCollection();loadHistory();updateStats();document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('pageHome').classList.add('active');document.getElementById('navHome').classList.add('active');document.getElementById('navCollection').classList.remove('active');document.getElementById('homeContent').style.display='none';document.getElementById('pikaLoading').style.display='block';document.getElementById('pikaLoading').innerHTML='<div class="pika-track"><div class="road"></div><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu"></div><div class="pika-text">Loading...</div><div class="pika-sub">Memuat data...</div>';init()}
+// ===== INIT =====
+async function init(){loadCollection();updateStats();loadCoins();checkDaily();loadLucky();loadHistory();if(gameMode==='digimon'){const pi=document.querySelector('.pika-track img');if(pi){pi.src='https://digi-api.com/images/digimon/w/Agumon.png';pi.style.imageRendering='auto'}try{await loadDigimonSets()}catch(err){document.getElementById('pikaLoading').innerHTML='<div class="pika-track"><div class="road"></div><img src="https://digi-api.com/images/digimon/w/Agumon.png" style="height:50px;image-rendering:auto"></div><div class="pika-text" style="color:#ef4444">'+gi('alarm-clock',14)+' '+(err.name==='AbortError'?'Timeout':'Gagal: '+err.message)+'</div><button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid var(--pika);border-radius:10px;background:transparent;color:var(--pika);font-weight:700;cursor:pointer;font-family:inherit">'+gi('cycle',14)+' Coba Lagi</button>'}return}try{const pt=document.querySelector('.pika-text'),ps=document.querySelector('.pika-sub');if(pt)pt.textContent='Menghubungi Pokemon TCG API...';if(ps)ps.textContent='Pikachu lagi lari cari data kartu';const data=await fetchJSON(TCG_API+'/sets?orderBy=-releaseDate&pageSize=40');allSets=data.data;renderSets(allSets);document.getElementById('pikaLoading').style.display='none';document.getElementById('homeContent').style.display='block'}catch(err){document.getElementById('pikaLoading').innerHTML='<div class="pika-text" style="color:#ef4444">'+gi('alarm-clock',14)+' '+(err.name==='AbortError'?'Timeout':'Gagal: '+err.message)+'</div><button onclick="init()" style="margin-top:16px;padding:10px 28px;border:2px solid var(--pika);border-radius:10px;background:transparent;color:var(--pika);font-weight:700;cursor:pointer;font-family:inherit">'+gi('cycle',14)+' Coba Lagi</button>'}}
+function renderSets(sets){const grid=document.getElementById('setsGrid');const colors={'Mega Evolution':'linear-gradient(135deg,#7c3aed,#2563eb)','Sun & Moon':'linear-gradient(135deg,#f59e0b,#ea580c)','Sword & Shield':'linear-gradient(135deg,#3b82f6,#06b6d4)','Scarlet & Violet':'linear-gradient(135deg,#ef4444,#ec4899)','Black & White':'linear-gradient(135deg,#374151,#6b7280)','XY':'linear-gradient(135deg,#8b5cf6,#a855f7)','HeartGold & SoulSilver':'linear-gradient(135deg,#fbbf24,#b45309)','Diamond & Pearl':'linear-gradient(135deg,#6366f1,#818cf8)'};grid.innerHTML=sets.map(s=>{const c=colors[s.series]||'linear-gradient(135deg,#1e293b,#475569)';return`<div class="pack-card" onclick="openPack('${s.id}')"><div class="pack-img" style="background:${c}">${s.images?.logo?`<img src="${s.images.logo}" alt="${s.name}" style="width:80%;height:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))">`:`<svg width="40" height="40" viewBox="0 0 256 256"><circle cx="128" cy="128" r="120" fill="#eee" stroke="rgba(255,255,255,.3)" stroke-width="8"/><path d="M128 8a120 120 0 0 1 0 240" fill="#475569"/><circle cx="128" cy="128" r="36" fill="#eee" stroke="rgba(255,255,255,.3)" stroke-width="8"/><circle cx="128" cy="128" r="16" fill="rgba(255,255,255,.3)"/></svg>`}</div><div class="pack-name">${s.name}</div><div class="pack-series">${s.series}</div><div class="pack-total">${gi('stack',10)} ${s.printedTotal} kartu</div></div>`}).join('')}
+function updateStats(){const t=collection.length,u=new Set(collection.map(c=>c.id)).size,fn=gameMode==='digimon'?isDigimonRare:isRare,r=collection.filter(c=>fn(c.rarity)).length;document.getElementById('statPacks').textContent=Math.ceil(t/10)||0;document.getElementById('statCards').textContent=t;document.getElementById('statRare').textContent=r;document.getElementById('collBadge').textContent=t;document.getElementById('collTotal').textContent=t;document.getElementById('collUnique').textContent=u;document.getElementById('collRare').textContent=r}
+async function openPack(setId){if(isOpening)return;const cost=PACK_COSTS[packCount]||0;if(cost>0&&!spendCoins(cost)){showToast('Koin tidak cukup! Butuh '+cost+' \ud83e\ude99');return}isOpening=true;const ov=document.getElementById('packOverlay'),tc=document.getElementById('tearContainer'),cr=document.getElementById('cardsReveal'),tp=document.getElementById('tearPack'),tt=document.getElementById('tearText'),lb=document.getElementById('loadingBar');ov.classList.add('active');tc.style.display='flex';cr.classList.remove('active');tp.className='tear-pack';tp.innerHTML=gi('present',48)+'<div class="click-hint">Klik untuk robek!</div>';tt.textContent='Klik pack untuk membuka';lb.style.width='0%';lb.style.display='';const set=allSets.find(s=>s.id===setId);if(!set){isOpening=false;return}const lucky=luckyCount===0&&collection.length>0;await new Promise(resolve=>{tp.onclick=async function(){tp.onclick=null;tp.innerHTML=gi('present',48);tt.textContent='Mengambil data kartu...';lb.style.width='0%';let p=0;const prog=setInterval(()=>{p=Math.min(p+3,85);lb.style.width=p+'%'},600);try{const data=await fetchJSON(TCG_API+'/cards?q=set.id:'+setId+'&pageSize=250');let cards=(data.data||[]).sort(()=>Math.random()-.5).slice(0,10*packCount);if(lucky){const rc=(data.data||[]).filter(c=>isRare(c.rarity));if(rc.length)cards[0]=rc[Math.floor(Math.random()*rc.length)]}openedCards=cards;clearInterval(prog);lb.style.width='100%';playSound('tear');await delay(200);tp.classList.add('tear-flash');tt.innerHTML=gi('star-cycle',14)+' Kartu-kartu muncul!';lb.style.display='none';const rareCount=openedCards.filter(c=>isRare(c.rarity)).length;if(rareCount>0)setTimeout(()=>{playSound('rare');fireConfetti()},700);await delay(500);tc.style.display='none';cr.classList.add('active');document.getElementById('revealSetName').innerHTML=gi('star-cycle',14)+' '+set.name+(packCount>1?' ('+packCount+'x)':'');document.getElementById('revealSetInfo').textContent=set.series+' \u2014 '+openedCards.length+' kartu';const grid=document.getElementById('cardsGrid');grid.innerHTML=openedCards.map((c,i)=>{const r=(c.rarity||'Common').replace(/\s+/g,'_');const rn=c.rarity||'Common';const rare=isRare(c.rarity);return'<div class="card-item rar-'+r+(rare?' rare-pulse holo':'')+'" style="transition-delay:'+i*.05+'s" data-index="'+i+'" onclick="showDetail('+i+')"><img src="'+(c.images?.small||'')+'" alt="'+c.name+'" loading="lazy"><div class="rarity-badge">'+(rare?gi('star-cycle',10):'')+rn+'</div><div class="card-info">'+c.name+(rare?' '+gi('star-cycle',10):'')+'</div></div>'}).join('');requestAnimationFrame(()=>{requestAnimationFrame(()=>document.querySelectorAll('.card-item').forEach(el=>el.classList.add('revealed')))});if(openedCards.every(c=>!isRare(c.rarity))){playSound('common');setTimeout(showJoke,1200)}openedCards.forEach(c=>{collection.push({id:c.id,name:c.name,rarity:c.rarity,supertype:c.supertype,types:c.types,hp:c.hp,set:set.name,setId:set.id,image:c.images?.small,imageLarge:c.images?.large,tcgplayer:c.tcgplayer,openedAt:Date.now()})});addCoins(Math.max(1,rareCount*5));luckyCount++;if(luckyCount>=LUCKY_THRESHOLD)luckyCount=0;saveLucky();saveCollection();updateStats();addHistory(openedCards,set.name);resolve()}catch(err){clearInterval(prog);tt.innerHTML=err.name==='AbortError'?gi('alarm-clock',14)+' Timeout':gi('cancel',14)+' '+err.message;await delay(1500);closePack();resolve()}}});isOpening=false}
+async function loadDigimonSets(){if(digimonAllCards.length>0){renderDigimonSets();document.getElementById('pikaLoading').style.display='none';document.getElementById('homeContent').style.display='block';return}const cards=await fetchJSON(DIGIMON_API+'/search?series=Digimon+Card+Game&limit=5000',60000);if(!Array.isArray(cards))throw new Error('Invalid');digimonAllCards=cards;const sm={};for(const card of cards){for(const s of card.set_name||[]){if(s.includes('Memorial')||s.includes('Playmat')||s.includes('Dash Pack')||s.includes('PB-09')||s.startsWith('BTC-')||/^BO-/.test(s))continue;if(!sm[s])sm[s]={name:s,count:0,cards:[]};sm[s].count++;sm[s].cards.push(card)}}digimonSets=Object.entries(sm).filter(([_,s])=>s.count>=15).sort((a,b)=>b[1].count-a[1].count).slice(0,45).map(([name,info])=>({id:name,name:name.replace(/^BT-\d+:\s*/,'').replace(/^EX-\d+:\s*/,'').replace(/^ST\d+:\s*/,'').replace(/^AD-\d+:\s*/,''),fullName:name,printedTotal:info.count,cards:info.cards}));document.getElementById('pikaLoading').style.display='none';document.getElementById('homeContent').style.display='block';renderDigimonSets()}
+function renderDigimonSets(){const grid=document.getElementById('setsGrid');const dc=['linear-gradient(135deg,#7c3aed,#a855f7)','linear-gradient(135deg,#2563eb,#06b6d4)','linear-gradient(135deg,#dc2626,#f97316)','linear-gradient(135deg,#059669,#10b981)','linear-gradient(135deg,#9333ea,#ec4899)','linear-gradient(135deg,#d97706,#f59e0b)','linear-gradient(135deg,#374151,#6b7280)','linear-gradient(135deg,#0891b2,#06b6d4)'];grid.innerHTML=digimonSets.map((s,i)=>'<div class="pack-card" onclick="openDigimonPack('+i+')"><div class="pack-img" style="background:'+dc[i%dc.length]+'">'+gi('fox-head',40)+'</div><div class="pack-name">'+s.name+'</div><div class="pack-series">Digimon Card Game</div><div class="pack-total">'+gi('stack',10)+' '+s.printedTotal+' kartu</div></div>').join('')}
+async function openDigimonPack(index){if(isOpening)return;const cost=PACK_COSTS[packCount]||0;if(cost>0&&!spendCoins(cost)){showToast('Koin tidak cukup! Butuh '+cost+' \ud83e\ude99');return}isOpening=true;const ov=document.getElementById('packOverlay'),tc=document.getElementById('tearContainer'),cr=document.getElementById('cardsReveal'),tp=document.getElementById('tearPack'),tt=document.getElementById('tearText'),lb=document.getElementById('loadingBar');ov.classList.add('active');tc.style.display='flex';cr.classList.remove('active');tp.className='tear-pack';tp.style.background='linear-gradient(145deg,#a855f7,#7c3aed)';tp.style.boxShadow='0 20px 60px rgba(168,85,247,.3)';tp.innerHTML=gi('fox-head',48)+'<div class="click-hint">Klik untuk robek!</div>';tt.textContent='Klik pack Digimon';lb.style.width='0%';lb.style.display='';const pack=digimonSets[index];if(!pack){isOpening=false;return}await new Promise(resolve=>{tp.onclick=async function(){tp.onclick=null;tp.innerHTML=gi('fox-head',48);tt.textContent='Mengambil kartu Digimon...';lb.style.width='0%';let p=0;const prog=setInterval(()=>{p=Math.min(p+3,85);lb.style.width=p+'%'},600);try{openedCards=pack.cards.sort(()=>Math.random()-.5).slice(0,10*packCount);clearInterval(prog);lb.style.width='100%';playSound('tear');await delay(200);tp.classList.add('tear-flash');tt.innerHTML=gi('star-cycle',14)+' Kartu Digimon muncul!';lb.style.display='none';const rareCount=openedCards.filter(c=>isDigimonRare(c.rarity)).length;if(rareCount>0)setTimeout(()=>{playSound('rare');fireConfetti()},700);await delay(500);tc.style.display='none';cr.classList.add('active');document.getElementById('revealSetName').innerHTML=gi('fox-head',20)+' '+pack.name;document.getElementById('revealSetInfo').textContent='Digimon TCG \u2014 '+openedCards.length+' kartu';const grid=document.getElementById('cardsGrid');grid.innerHTML=openedCards.map((c,i)=>{const r=(c.rarity||'Common').replace(/\s+/g,'_');const rare=isDigimonRare(c.rarity);return'<div class="card-item rar-'+r+(rare?' rare-pulse holo':'')+'" style="transition-delay:'+i*.05+'s" onclick="showDigimonDetail('+i+')"><img src="'+DIGIMON_IMG+'/'+c.id+'" alt="'+c.name+'" loading="lazy" onerror="digiError(this)"><div class="rarity-badge">'+(rare?gi('star-cycle',10):'')+(c.rarity||'Common')+'</div><div class="card-info">'+c.name+'</div></div>'}).join('');requestAnimationFrame(()=>{requestAnimationFrame(()=>document.querySelectorAll('.card-item').forEach(el=>el.classList.add('revealed')))});if(openedCards.every(c=>!isDigimonRare(c.rarity)))playSound('common');openedCards.forEach(c=>{collection.push({id:c.id,name:c.name,rarity:c.rarity,supertype:c.type,types:[c.color].filter(Boolean),hp:c.dp||c.level,set:pack.name,setId:pack.fullName,image:DIGIMON_IMG+'/'+c.id,imageLarge:DIGIMON_IMG+'/'+c.id,stage:c.stage||'',attribute:c.attribute||'',color:c.color||'',digiType:c.digi_type||'',level:c.level||'',effect:c.main_effect||'',openedAt:Date.now()})});addCoins(Math.max(1,rareCount*5));luckyCount++;if(luckyCount>=LUCKY_THRESHOLD)luckyCount=0;saveLucky();saveCollection();updateStats();addHistory(openedCards,pack.name);resolve()}catch(err){clearInterval(prog);tt.innerHTML=gi('cancel',14)+' '+err.message;await delay(1500);closePack();resolve()}}});isOpening=false}
+function showDigimonDetail(index){const c=openedCards[index];if(!c)return;const ov=document.getElementById('detailOverlay');const fb=document.getElementById('detailImgFallback');if(fb)fb.remove();document.getElementById('detailImg').src=DIGIMON_IMG+'/'+c.id;document.getElementById('detailImg').onerror=function(){this.style.display='none';let fb=document.getElementById('detailImgFallback');if(!fb){fb=document.createElement('div');fb.id='detailImgFallback';fb.style.cssText='display:flex;align-items:center;justify-content:center;min-height:200px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:12px;padding:20px;flex-direction:column;margin-bottom:12px';this.parentElement.insertBefore(fb,this.nextSibling)}fb.innerHTML='<span>'+(c?.name||'Digimon')+'</span>'};document.getElementById('detailName').textContent=c.name+' \u2014 '+(c.type||'Digimon');document.getElementById('detailSub').textContent=[c.rarity,c.color,c.stage,c.level?'Lv.'+c.level:'',c.dp?'DP '+c.dp:''].filter(Boolean).join(' | ');document.getElementById('detailPrice').textContent='';document.getElementById('translationResult').textContent='';document.getElementById('translateBtn').style.display='none';document.getElementById('shareBtn').style.display='inline-block';document.getElementById('deleteBtn').style.display='none';const cb=c.color?'<span class="digi-badge digi-'+c.color+'">'+c.color+'</span>':'';document.getElementById('pokeInfo').innerHTML='<div class="digi-detail-box">'+(cb?'<div style="margin-bottom:6px">'+cb+'</div>':'')+'<div class="digi-row"><span class="digi-label">Jenis</span><span class="digi-value">'+(c.type||'-')+'</span></div>'+(c.stage?'<div class="digi-row"><span class="digi-label">Stage</span><span class="digi-value">'+c.stage+'</span></div>':'')+(c.level?'<div class="digi-row"><span class="digi-label">Level</span><span class="digi-value">'+c.level+'</span></div>':'')+(c.dp?'<div class="digi-row"><span class="digi-label">DP</span><span class="digi-value">'+c.dp+'</span></div>':'')+(c.main_effect?'<div class="digi-effect">'+gi('tied-scroll',14)+' '+c.main_effect+'</div>':'')+'</div>';ov.classList.add('active')}
+async function showDetail(index){const c=openedCards[index];if(!c)return;const ov=document.getElementById('detailOverlay');document.getElementById('detailImg').src=c.images?.large||c.images?.small||'';document.getElementById('detailName').textContent=c.name+' \u2014 '+(c.supertype||'');document.getElementById('detailSub').textContent=[c.rarity,c.hp?'HP '+c.hp:'',(c.types||[]).join(', ')].filter(Boolean).join(' | ');const pr=c.tcgplayer?.prices;const keys=pr?Object.keys(pr):[];document.getElementById('detailPrice').innerHTML=keys.length?gi('crown-coin',14)+' Market: $'+(pr[keys[0]].market||0).toFixed(2):'';document.getElementById('translationResult').textContent='';document.getElementById('pokeInfo').innerHTML='<div style="font-size:.8rem;color:var(--muted)">'+gi('magnifying-glass',14)+' Mencari data Pokemon...</div>';currentPokeName=c.name.toLowerCase().replace(/[^a-z0-9]/g,'').replace(/\s+/g,'-');if(currentPokeName.startsWith('mega'))currentPokeName=currentPokeName.replace('mega','');if(currentPokeName.endsWith('ex'))currentPokeName=currentPokeName.slice(0,-2).trim();try{const pd=await fetchJSON(POKE_API+'/pokemon/'+currentPokeName,7000);const sp=await fetchJSON(POKE_API+'/pokemon-species/'+pd.id,7000);const typesHtml=pd.types.map(t=>'<span class="type-badge type-'+t.type.name.charAt(0).toUpperCase()+t.type.name.slice(1)+'"><img class="type-icon-img" src="'+TYPE_ICONS+'/'+t.type.name+'.svg" alt="">'+t.type.name+'</span>').join('');const stats={};pd.stats.forEach(s=>stats[s.stat.name]=s.base_stat);const total=pd.stats.reduce((a,s)=>a+s.base_stat,0);const sprite=pd.sprites?.other?.['official-artwork']?.front_default||pd.sprites?.front_default||'';let evoHtml='';try{const evoUrl=sp.evolution_chain?.url;if(evoUrl){const evo=await fetchJSON(evoUrl,5000);const list=[];let chain=evo.chain;while(chain){list.push(chain.species.name);chain=chain.evolves_to?.[0]||null}const items=await Promise.all(list.map(async(n,i)=>{const id=await getPokeId(n);const img=id?'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'+id+'.png':'';return(i>0?'<span class="evo-arrow">'+gi('arrowhead',12)+'</span>':'')+'<div class="evo-item"><img src="'+img+'" onerror="this.style.display=\'none\'"><span>'+n.charAt(0).toUpperCase()+n.slice(1)+'</span></div>'}));evoHtml='<div class="evo-row">'+items.join('')+'</div>'}}catch(_){}document.getElementById('pokeInfo').innerHTML='<div class="poke-box"><div class="poke-head">'+(sprite?'<img src="'+sprite+'">':'')+'<div><div class="pn">'+sp.name.charAt(0).toUpperCase()+sp.name.slice(1)+'</div><div class="pid">#'+String(pd.id).padStart(4,'0')+'</div></div></div><div>'+typesHtml+'</div><div class="stat-grid"><div class="s-item"><div class="s-val">'+(stats.hp||0)+'</div><div class="s-lbl">HP</div></div><div class="s-item"><div class="s-val">'+(stats.attack||0)+'</div><div class="s-lbl">ATK</div></div><div class="s-item"><div class="s-val">'+(stats.defense||0)+'</div><div class="s-lbl">DEF</div></div><div class="s-item"><div class="s-val">'+(stats['special-attack']||0)+'</div><div class="s-lbl">SPATK</div></div><div class="s-item"><div class="s-val">'+(stats['special-defense']||0)+'</div><div class="s-lbl">SPDEF</div></div></div><div style="text-align:center;margin-top:5px;font-size:.7rem;color:var(--muted)">Total: '+total+'</div>'+evoHtml+'</div>'}catch(_){document.getElementById('pokeInfo').innerHTML=''}ov.classList.add('active')}
+async function getPokeId(name){if(pokeIdCache[name])return pokeIdCache[name];try{const d=await fetchJSON(POKE_API+'/pokemon/'+name,3000);pokeIdCache[name]=d.id;return d.id}catch{return null}}
+function closePack(){document.getElementById('packOverlay').classList.remove('active');document.getElementById('tearContainer').style.display='flex';document.getElementById('cardsReveal').classList.remove('active')}
+async function translateCard(){const name=document.getElementById('detailName')?.textContent?.split('\u2014')[0]?.trim();if(!name)return;const el=document.getElementById('translationResult');el.textContent='Menerjemahkan...';try{const d=await fetchJSON(FUNTRANS_API+'/yoda.json',6000,{method:'POST',body:new URLSearchParams({text:name}),headers:{'Content-Type':'application/x-www-form-urlencoded'}});el.textContent='"'+(d.contents?.translated||name)+'"'}catch{el.innerHTML=gi('star-cycle',14)+' '+name.split('').reverse().join('')+' '+gi('star-cycle',14)}}
+function getFilteredCollection(){const q=document.getElementById('collSearch').value.toLowerCase();const f=document.getElementById('collFilter').value;let filtered=[...collection];if(q)filtered=filtered.filter(c=>c.name.toLowerCase().includes(q));if(f!=='all'){if(f==='Rare')filtered=filtered.filter(c=>gameMode==='pokemon'?isRare(c.rarity):isDigimonRare(c.rarity));else if(f==='Ultra')filtered=filtered.filter(c=>(c.rarity||'').includes('Ultra'));else if(f==='Secret')filtered=filtered.filter(c=>(c.rarity||'').includes('Secret'));else if(f==='Super Rare')filtered=filtered.filter(c=>(c.rarity||'')==='Super Rare');else filtered=filtered.filter(c=>(c.rarity||'')===f)}return filtered.reverse()}
+function renderCollection(){const grid=document.getElementById('collGrid'),empty=document.getElementById('collEmpty');loadCollection();const filtered=getFilteredCollection();if(!filtered.length){grid.innerHTML='';empty.style.display='block';return}empty.style.display='none';const isRareFn=gameMode==='digimon'?isDigimonRare:isRare;grid.innerHTML=filtered.map((c,i)=>{const r=(c.rarity||'Common').replace(/\s+/g,'_');const rare=isRareFn(c.rarity);return'<div class="card-item rar-'+r+(rare?' holo':'')+'" style="transition-delay:'+Math.min(i,20)*.03+'s" onclick="showCollectionDetail('+i+')"><img src="'+(c.image||'')+'" alt="'+c.name+'" loading="lazy" onerror="digiError(this)"><div class="rarity-badge">'+(rare?gi('star-cycle',10):'')+(c.rarity||'Common')+'</div><div class="card-info">'+c.name+(rare?' '+gi('star-cycle',10):'')+' \u00b7 '+(c.set||'')+'</div></div>'}).join('');requestAnimationFrame(()=>{requestAnimationFrame(()=>document.querySelectorAll('#collGrid .card-item').forEach(el=>el.classList.add('revealed')))})}
+function showCollectionDetail(index){loadCollection();const filtered=getFilteredCollection();const c=filtered[index];if(!c)return;deleteTargetIndex=index;const ov=document.getElementById('detailOverlay');const fb=document.getElementById('detailImgFallback');if(fb)fb.remove();const img=document.getElementById('detailImg');img.src=c.imageLarge||c.image||'';img.style.display='';img.onerror=function(){this.style.display='none';let fb=document.getElementById('detailImgFallback');if(!fb){fb=document.createElement('div');fb.id='detailImgFallback';fb.style.cssText='display:flex;align-items:center;justify-content:center;min-height:200px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:12px;padding:20px;flex-direction:column;margin-bottom:12px';this.parentElement.insertBefore(fb,this.nextSibling)}fb.innerHTML='<span>'+(this.alt||c.name)+'</span>'};document.getElementById('detailName').textContent=c.name+' \u2014 '+(c.supertype||'');document.getElementById('detailSub').textContent=[c.rarity,c.hp?'HP '+c.hp:'',(c.types||[]).join(', '),c.set||''].filter(Boolean).join(' | ');document.getElementById('detailPrice').textContent='';document.getElementById('translationResult').textContent='';if(gameMode==='digimon'&&c.color){document.getElementById('translateBtn').style.display='none';document.getElementById('pokeInfo').innerHTML='<div class="digi-detail-box">'+(c.color?'<div style="margin-bottom:6px"><span class="digi-badge digi-'+c.color+'">'+c.color+'</span></div>':'')+(c.stage?'<div class="digi-row"><span class="digi-label">Stage</span><span class="digi-value">'+c.stage+'</span></div>':'')+(c.dp?'<div class="digi-row"><span class="digi-label">DP</span><span class="digi-value">'+c.dp+'</span></div>':'')+(c.effect?'<div class="digi-effect">'+gi('tied-scroll',14)+' '+c.effect+'</div>':'')+'<div class="digi-row"><span class="digi-label">Set</span><span class="digi-value">'+(c.set||'')+'</span></div></div>'}else{document.getElementById('translateBtn').style.display='inline-block';document.getElementById('pokeInfo').innerHTML=''}document.getElementById('shareBtn').style.display='inline-block';document.getElementById('deleteBtn').style.display='inline-block';ov.classList.add('active')}
+function deleteCard(){loadCollection();const filtered=getFilteredCollection();if(deleteTargetIndex<0||deleteTargetIndex>=filtered.length)return;const target=filtered[deleteTargetIndex];const idx=collection.findIndex(c=>c.id===target.id&&c.openedAt===target.openedAt);if(idx>-1){collection.splice(idx,1);saveCollection();updateStats();renderCollection()}document.getElementById('detailOverlay').classList.remove('active');fireConfetti()}
+function clearAll(){if(!collection.length)return;if(!confirm('Hapus SEMUA koleksi?'))return;collection=[];saveCollection();updateStats();renderCollection();fireConfetti()}
+function shareCard(){const name=document.getElementById('detailName')?.textContent?.split('\u2014')[0]?.trim();const rarity=document.getElementById('detailSub')?.textContent?.split('|')[0]?.trim();if(!name)return;const text='\ud83d\udd25 BREWEK POKEMON KUY!\nDapet '+name+' ('+(rarity||'Common')+')!\nhttps://pokemon-pack-sim-one.vercel.app';if(navigator.share)navigator.share({title:'brewek',text,url:'https://pokemon-pack-sim-one.vercel.app'}).catch(()=>{});else navigator.clipboard?.writeText(text).then(()=>showToast('Teks berhasil disalin! \ud83d\udccb')).catch(()=>{})}
+function renderHistory(){loadHistory();const list=document.getElementById('historyList'),empty=document.getElementById('historyEmpty');if(!pullHistory.length){list.innerHTML='';empty.style.display='block';return}empty.style.display='none';const isRareFn=gameMode==='digimon'?isDigimonRare:isRare;list.innerHTML=pullHistory.slice(0,100).map(h=>{const rare=isRareFn(h.rarity);const s=Math.floor((Date.now()-h.time)/1000);const ago=s<60?'Baru saja':s<3600?Math.floor(s/60)+'m lalu':s<86400?Math.floor(s/3600)+'j lalu':Math.floor(s/86400)+'d lalu';return'<div class="history-item"><img src="'+h.image+'" alt="'+h.name+'" onerror="this.style.display=\'none\'"><div><div class="hi-name">'+h.name+'</div><div class="hi-meta">'+h.set+' \u00b7 '+ago+'</div></div>'+(rare?'<div class="hi-rare">'+gi('star-cycle',10)+' '+h.rarity+'</div>':'')+'</div>'}).join('')}
+function renderStats(){loadCollection();const isRareFn=gameMode==='digimon'?isDigimonRare:isRare;const total=collection.length,unique=new Set(collection.map(c=>c.id)).size,rares=collection.filter(c=>isRareFn(c.rarity)).length,packs=Math.ceil(total/10)||0;document.getElementById('statsGrid').innerHTML='<div class="stat-card"><div class="sc-val">'+total+'</div><div class="sc-label">Total Kartu</div></div><div class="stat-card"><div class="sc-val">'+unique+'</div><div class="sc-label">Kartu Unik</div></div><div class="stat-card"><div class="sc-val">'+rares+'</div><div class="sc-label">Kartu Rare</div></div><div class="stat-card"><div class="sc-val">'+packs+'</div><div class="sc-label">Pack Dibuka</div></div><div class="stat-card"><div class="sc-val">'+coins+'</div><div class="sc-label">Koin</div></div><div class="stat-card"><div class="sc-val">'+(total?((rares/total)*100).toFixed(1):0)+'%</div><div class="sc-label">Rasio Rare</div></div>';const cc={};collection.forEach(c=>{cc[c.name]=(cc[c.name]||0)+1});const topCards=Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,5);const rareCards=collection.filter(c=>isRareFn(c.rarity)).filter((c,i,a)=>a.findIndex(x=>x.id===c.id)===i).slice(0,5);document.getElementById('topCardsGrid').innerHTML=topCards.map(([name,count])=>{const card=collection.find(c=>c.name===name);return'<div class="card-item rar-Common revealed" style="opacity:1;transform:none;cursor:default"><img src="'+(card?.image||'')+'" alt="'+name+'" loading="lazy" onerror="this.style.display=\'none\'"><div class="card-info" style="opacity:1">'+name+' ('+count+'x)</div></div>'}).join('')||'<div style="color:var(--muted);font-size:.8rem">Belum ada data</div>';document.getElementById('rareCardsGrid').innerHTML=rareCards.map(c=>'<div class="card-item rar-Rare revealed holo" style="opacity:1;transform:none;cursor:default"><img src="'+(c.image||'')+'" alt="'+c.name+'" loading="lazy" onerror="this.style.display=\'none\'"><div class="rarity-badge">'+gi('star-cycle',10)+' '+(c.rarity||'Rare')+'</div><div class="card-info" style="opacity:1">'+c.name+'</div></div>').join('')||'<div style="color:var(--muted);font-size:.8rem">Belum ada kartu rare</div>'}
 init();
 </script>
 </body>
