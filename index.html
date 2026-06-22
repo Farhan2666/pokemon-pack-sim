@@ -155,10 +155,12 @@
     .grid-close:hover{border-color:var(--pika);color:var(--pika);background:rgba(255,203,5,.08);transform:scale(1.03)}
     .detail-overlay{position:fixed;inset:0;z-index:200;background:rgba(5,5,20,.95);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
     .detail-overlay.active{display:flex}
-    .detail-card{max-width:500px;width:100%;text-align:center;background:rgba(26,26,62,.5);border:1px solid var(--glass-border);border-radius:20px;padding:24px;backdrop-filter:blur(12px)}
-    .detail-card .main-img{width:100%;max-width:280px;border-radius:14px;margin-bottom:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);cursor:zoom-in;transition:all .4s cubic-bezier(.4,0,.2,1)}
-    .detail-card .main-img:hover{transform:scale(1.03);box-shadow:0 24px 70px rgba(0,0,0,.6)}
-    .detail-card .main-img.zoomed{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(1.6);z-index:300;max-width:90vw;max-height:90vh;width:auto;cursor:zoom-out;box-shadow:0 0 0 9999px rgba(5,5,20,.85),0 30px 80px rgba(0,0,0,.7);border-radius:16px}
+    .detail-card{max-width:500px;width:100%;text-align:center;max-height:90vh;overflow-y:auto;background:rgba(26,26,62,.5);border:1px solid var(--glass-border);border-radius:20px;padding:24px;backdrop-filter:blur(12px);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent}
+    .detail-card::-webkit-scrollbar{width:6px}
+    .detail-card::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:3px}
+    .detail-card .main-img{width:100%;max-width:220px;max-height:45vh;border-radius:14px;margin-bottom:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);cursor:zoom-in;transition:all .4s cubic-bezier(.4,0,.2,1);object-fit:contain}
+    .detail-card .main-img:hover{transform:scale(1.05);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+    .detail-card .main-img.zoomed{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(1.5);z-index:300;max-width:92vw;max-height:92vh;width:auto;height:auto;cursor:zoom-out;box-shadow:0 0 0 9999px rgba(5,5,20,.88),0 30px 80px rgba(0,0,0,.7);border-radius:16px}
     .detail-card h3{font-size:1.15rem}
     .detail-card .sub-info{color:var(--muted);font-size:.75rem;margin-bottom:6px}
     .detail-card .price-tag{padding:6px 14px;background:rgba(255,203,5,.08);border:1px solid rgba(255,203,5,.15);border-radius:10px;display:inline-block;font-size:.8rem;color:#fbbf24;margin-bottom:10px}
